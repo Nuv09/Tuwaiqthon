@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAF - إضافة مزرعة جديدة</title>
+    <!-- Google Fonts for Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+    <style>
+        :root {
+            /* Theme Colors */
+            --primary-bg: #042C25;
+            --primary-light: #064036;
+            --accent: #FDCB6E;
+            --text-light: #FFF6E0;
+            --glass-bg: rgba(4, 44, 37, 0.65);
+            --glass-border: rgba(254, 187, 151, 0.25);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(255, 246, 224, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-light) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            direction: rtl;
+            text-align: right;
+            padding-top: 100px;
+            /* Space for the fixed header */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Top Section */
+        .header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: var(--text-light);
+            font-weight: 700;
+        }
+
+        .header i {
+            font-size: 3rem;
+            color: var(--accent);
+            opacity: 0.9;
+        }
+
+        /* Glass Panel Container */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-light);
+            display: block;
+            text-align: right;
+            margin-bottom: 2px;
+        }
+
+        /* Input Styling */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            background: var(--input-bg);
+            color: var(--text-light);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select option {
+            background: var(--primary-light);
+            color: var(--text-light);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Input Focus State */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(254, 187, 151, 0.2);
+            background: rgba(255, 246, 224, 0.08);
+        }
+
+        /* Map Section */
+        .map-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            padding-right: 44px;
+            /* Space for search icon */
+        }
+
+        .search-bar i {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            opacity: 0.6;
+            font-size: 1.1rem;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-bg);
+            z-index: 1;
+        }
+
+        /* Floating compass icon over map */
+        .compass-icon {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            color: var(--accent);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: blur(8px);
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        /* Action Buttons Below Map */
+        .map-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(254, 187, 151, 0.1);
+            box-shadow: 0 0 10px rgba(254, 187, 151, 0.3);
+        }
+
+        /* Main Submit Button */
+        .btn-primary {
+            background: var(--accent);
+            color: var(--primary-bg);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 14px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(254, 187, 151, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(254, 187, 151, 0.4);
+            background: #ffd0b8;
+            /* slightly lighter on hover */
+        }
+
+        /* Customizing Leaflet Controls */
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: var(--glass-shadow) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+            margin-top: 15px !important;
+            margin-right: 15px !important;
+        }
+
+        .leaflet-bar a {
+            background-color: var(--glass-bg) !important;
+            color: var(--text-light) !important;
+            border: 1px solid var(--glass-border) !important;
+            backdrop-filter: blur(5px);
+        }
+
+        .leaflet-bar a:hover {
+            background-color: var(--primary-light) !important;
+            color: var(--accent) !important;
+        }
+
+        .leaflet-draw.leaflet-control {
+            margin-top: 15px !important;
+            margin-right: 15px !important;
+            box-shadow: var(--glass-shadow) !important;
+            border-radius: 8px !important;
+        }
+
+        /* Fix drawing points icon colors */
+        .leaflet-draw-toolbar a {
+            background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/images/spritesheet.png') !important;
+        }
+
+        .leaflet-retina .leaflet-draw-toolbar a {
+            background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/images/spritesheet-2x.png') !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .map-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+
+        /* Top Navigation Header */
+        .main-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-light) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+        }
+
+        .nav-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-item {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background-color: var(--accent);
+            color: var(--primary-bg);
+            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+        }
+
+        .nav-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                height: auto;
+                gap: 15px;
+            }
+
+            body {
+                padding-top: 160px;
+                /* Expand space to accommodate stacked mobile nav */
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .nav-item {
+                padding: 8px 16px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main Global Navigation Bar -->
+    <header class="main-navbar">
+        <div class="nav-brand">سعف ويب</div>
+        <nav class="nav-links">
+            <a href="Home_page.html" class="nav-item">الرئيسية</a>
+            <a href="add_farm.html" class="nav-item active">إضافة مزرعة</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Top Section -->
+        <div class="header">
+            <i class="fa-solid fa-tractor"></i>
+            <h1>إضافة مزرعة جديدة</h1>
+        </div>
+
+        <!-- Form and Map Container -->
+        <div class="glass-panel">
+            <form id="addFarmForm" onsubmit="event.preventDefault(); submitFarm();">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="farmName">اسم المزرعة</label>
+                        <input type="text" id="farmName" placeholder="أدخل اسم المزرعة" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ownerName">اسم المالك</label>
+                        <input type="text" id="ownerName" placeholder="أدخل اسم المالك" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contractNum">رقم العقد</label>
+                        <input type="text" id="contractNum" placeholder="أدخل رقم العقد">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="farmArea">مساحة المزرعة (م²)</label>
+                        <input type="number" id="farmArea" placeholder="أدخل المساحة" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="region">المنطقة</label>
+                        <select id="region" required>
+                            <option value="" disabled selected>اختر المنطقة</option>
+                            <option value="Riyadh">الرياض</option>
+                            <option value="Makkah">مكة المكرمة</option>
+                            <option value="Madinah">المدينة المنورة</option>
+                            <option value="Qassim">القصيم</option>
+                            <option value="Eastern">المنطقة الشرقية</option>
+                            <option value="Asir">عسير</option>
+                            <option value="Tabuk">تبوك</option>
+                            <option value="Hail">حائل</option>
+                            <option value="NorthernBorders">الحدود الشمالية</option>
+                            <option value="Jazan">جازان</option>
+                            <option value="Najran">نجران</option>
+                            <option value="Baha">الباحة</option>
+                            <option value="Jawf">الجوف</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes">ملاحظات إضافية</label>
+                        <textarea id="notes" placeholder="أضف أي ملاحظات أخرى هنا..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group full-width" style="margin-top: 25px; gap: 15px;">
+                    <label>تحديد نطاق المزرعة</label>
+                    <div class="map-section">
+                        <!-- Search Bar -->
+                        <div class="search-bar">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="locationSearch" placeholder="ابحث عن موقع المزرعة...">
+                        </div>
+
+                        <!-- Map Wrapper -->
+                        <div class="map-wrapper">
+                            <div id="map"></div>
+                            <div class="compass-icon">
+                                <i class="fa-regular fa-compass"></i>
+                            </div>
+                        </div>
+
+                        <!-- Map Toolbar below map -->
+                        <div class="map-controls">
+                            <div class="map-buttons">
+                                <button type="button" class="btn-outline" onclick="removeLastShape()">
+                                    <i class="fa-solid fa-rotate-left"></i> تراجع
+                                </button>
+                                <button type="button" class="btn-outline" onclick="clearAllShapes()">
+                                    <i class="fa-solid fa-trash"></i> مسح الكل
+                                </button>
+                            </div>
+                            <span style="font-size: 0.95rem; opacity: 0.8; color: var(--accent);">
+                                <i class="fa-solid fa-draw-polygon"></i> ارسم حدود المزرعة باستخدام أدوات الخريطة
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-primary" style="margin-top: 35px;">إضافة المزرعة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet & Draw JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+    <script>
+        // Global variable for drawn coordinates
+        let currentPolygonCoordinates = null;
+
+        // Initialize Map
+        const map = L.map('map', {
+            zoomControl: false // Defined separately for positioning
+        }).setView([24.7136, 46.6753], 6); // Centered roughly on Saudi Arabia
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // Satellite Tile Layer
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri',
+            maxZoom: 19
+        }).addTo(map);
+
+        // FeatureGroup to hold drawn shapes
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Initialize Leaflet Draw
+        const drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polyline: false,
+                circle: false,
+                circlemarker: false,
+                marker: false,
+                rectangle: false,
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    drawError: {
+                        color: '#ef4444',
+                        message: '<strong>خطأ:</strong> لا يمكن تداخل الخطوط!'
+                    },
+                    shapeOptions: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+                        fillColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+                        fillOpacity: 0.3,
+                        weight: 2
+                    }
+                }
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true,
+                edit: true
+            }
+        });
+        map.addControl(drawControl);
+
+        // Event Listeners for Draw
+        map.on(L.Draw.Event.CREATED, function (e) {
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+
+            // Extract and store coordinates into the JavaScript variable
+            if (layer instanceof L.Polygon) {
+                currentPolygonCoordinates = layer.getLatLngs()[0].map(latlng => ({
+                    lat: latlng.lat,
+                    lng: latlng.lng
+                }));
+            }
+        });
+
+        map.on(L.Draw.Event.DELETED, function () {
+            // Clear coordinates if everything is deleted
+            if (drawnItems.getLayers().length === 0) {
+                currentPolygonCoordinates = null;
+            }
+        });
+
+        // Custom Buttons Implementation
+        function clearAllShapes() {
+            drawnItems.clearLayers();
+            currentPolygonCoordinates = null;
+        }
+
+        // Simulating "undo" by removing the latest completely drawn shape
+        function removeLastShape() {
+            const layers = drawnItems.getLayers();
+            if (layers.length > 0) {
+                drawnItems.removeLayer(layers[layers.length - 1]);
+                if (drawnItems.getLayers().length === 0) {
+                    currentPolygonCoordinates = null;
+                }
+            }
+        }
+
+        // Form Submission Logic
+        function submitFarm() {
+            // Gather form data
+            const formData = {
+                farmName: document.getElementById('farmName').value,
+                ownerName: document.getElementById('ownerName').value,
+                contractNum: document.getElementById('contractNum').value,
+                farmArea: document.getElementById('farmArea').value,
+                region: document.getElementById('region').value,
+                notes: document.getElementById('notes').value,
+                polygonCoordinates: currentPolygonCoordinates
+            };
+
+            // Log output to console as requested
+            console.log("=== تفاصيل المزرعة الجديدة ===");
+            console.log("البيانات النصية:", formData);
+
+            if (formData.polygonCoordinates && formData.polygonCoordinates.length > 0) {
+                console.log("إحداثيات النطاق (مصفوفة JS):", formData.polygonCoordinates);
+            } else {
+                console.log("ملاحظة: لم يتم رسم نطاق المزرعة على الخريطة.");
+            }
+
+            alert('تم عرض بيانات المزرعة في Console (F12) بنجاح!');
+        }
+    </script>
+</body>
+
+</html>

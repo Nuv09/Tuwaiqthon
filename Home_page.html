@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAF - مزارعي</title>
+    <!-- Google Fonts for Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            /* Theme Colors */
+            --primary-bg: #042C25;
+            --primary-light: #064036;
+            --accent: #FDCB6E;
+            --text-light: #FFF6E0;
+            --card-light-bg: #FFF6E0;
+
+            /* UI Elements */
+            --glass-bg: rgba(4, 44, 37, 0.65);
+            --glass-border: rgba(253, 203, 110, 0.25);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(255, 246, 224, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: url('images/palm2.png') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            direction: rtl;
+            padding-top: 100px;
+        }
+
+        /* Abstract Background Elements */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 44, 37, 0.75);
+            z-index: -2;
+        }
+
+        .deco-circle {
+            position: fixed;
+            border-radius: 50%;
+            background-color: rgba(253, 203, 110, 0.15);
+            z-index: -1;
+            filter: blur(40px);
+        }
+
+        .deco-circle-1 {
+            width: 600px;
+            height: 600px;
+            bottom: -200px;
+            left: -150px;
+        }
+
+        .deco-circle-2 {
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            right: -100px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 10;
+            /* Ensure content is above background layers */
+            position: relative;
+        }
+
+        /* Top Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 5px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--text-light);
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .badge {
+            background-color: var(--accent);
+            color: var(--primary-bg);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .search-container i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 55px 18px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: var(--input-bg);
+            color: var(--text-light);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.05rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 246, 224, 0.6);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            background: rgba(255, 246, 224, 0.12);
+            box-shadow: 0 0 15px rgba(253, 203, 110, 0.2);
+        }
+
+        /* Farms List Container */
+        .farms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Farm Card Style */
+        .farm-card {
+            display: flex;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            height: 120px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .farm-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Right Side: Deep Green Information */
+        .card-info {
+            flex: 1;
+            background: rgba(6, 64, 54, 0.85);
+            /* Slightly lighter border match */
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid var(--glass-border);
+            border-left: none;
+            /* No border where colors meet */
+            border-radius: 0 20px 20px 0;
+            gap: 10px;
+        }
+
+        .farm-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .farm-location {
+            font-size: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.9;
+        }
+
+        /* Left Side: Beige Indicator */
+        .card-stats {
+            width: 140px;
+            background: var(--card-light-bg);
+            color: var(--primary-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px 0 0 20px;
+            position: relative;
+        }
+
+        /* Circular Progress Indicator */
+        .progress-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            /* --color will be dynamically assigned via JS */
+            background: conic-gradient(var(--color, var(--primary-bg)) var(--progress), #e2dfd5 var(--progress));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.5s ease;
+        }
+
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            background-color: var(--card-light-bg);
+            border-radius: 50%;
+        }
+
+        .progress-value {
+            position: relative;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color, var(--primary-bg));
+            z-index: 1;
+            transition: color 0.5s ease;
+        }
+
+        /* Mobile Responsive Resizing */
+        @media (max-width: 600px) {
+            .farm-card {
+                height: 110px;
+            }
+
+            .card-info {
+                padding: 16px;
+            }
+
+            .farm-name {
+                font-size: 1.2rem;
+            }
+
+            .card-stats {
+                width: 110px;
+            }
+
+            .progress-circle {
+                width: 65px;
+                height: 65px;
+            }
+
+            .progress-circle::before {
+                width: 52px;
+                height: 52px;
+            }
+
+            .progress-value {
+                font-size: 1rem;
+            }
+        }
+
+        /* Top Navigation Header */
+        .main-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-light) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+        }
+
+        .nav-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-item {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background-color: var(--accent);
+            color: var(--primary-bg);
+            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+        }
+
+        .nav-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                height: auto;
+                gap: 15px;
+            }
+
+            body {
+                padding-top: 160px;
+                /* Expand space to accommodate stacked mobile nav */
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .nav-item {
+                padding: 8px 16px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background Layers -->
+    <div class="bg-overlay"></div>
+    <div class="deco-circle deco-circle-1"></div>
+    <div class="deco-circle deco-circle-2"></div>
+
+    <!-- Main Global Navigation Bar -->
+    <header class="main-navbar">
+        <div class="nav-brand">سعف ويب</div>
+        <nav class="nav-links">
+            <a href="Home_page.html" class="nav-item active">الرئيسية</a>
+            <a href="add_farm.html" class="nav-item">إضافة مزرعة</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Top Section -->
+        <div class="header">
+            <h1>مزارعي</h1>
+            <div class="badge">15 مزرعة</div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" class="search-input" placeholder="ابحث باسم المزرعة أو المنطقة...">
+        </div>
+
+        <!-- Farms List -->
+        <div class="farms-list">
+
+            <!-- Farm Card 1 -->
+            <a href="map.html" class="farm-card">
+                <div class="card-info">
+                    <div class="farm-name">مزرعة النخيل الذهبي</div>
+                    <div class="farm-location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        الرياض، السعودية
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <!-- Progress set to 66% -->
+                    <div class="progress-circle" style="--progress: 66%">
+                        <span class="progress-value">66%</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Farm Card 2 -->
+            <a href="map.html" class="farm-card">
+                <div class="card-info">
+                    <div class="farm-name">مزرعة واحة الأحساء</div>
+                    <div class="farm-location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        الأحساء، المنطقة الشرقية
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <!-- Progress set to 100% -->
+                    <div class="progress-circle" style="--progress: 100%">
+                        <span class="progress-value">100%</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Farm Card 3 -->
+            <a href="map.html" class="farm-card">
+                <div class="card-info">
+                    <div class="farm-name">مزرعة القصيم الكبرى</div>
+                    <div class="farm-location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        بريدة، القصيم
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <!-- Progress set to 85% -->
+                    <div class="progress-circle" style="--progress: 85%">
+                        <span class="progress-value">85%</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Farm Card 4 -->
+            <a href="map.html" class="farm-card">
+                <div class="card-info">
+                    <div class="farm-name">مزرعة طيبة الطيبة</div>
+                    <div class="farm-location">
+                        <i class="fa-solid fa-location-dot"></i>
+                        المدينة المنورة
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <!-- Progress set to 42% -->
+                    <div class="progress-circle" style="--progress: 42%">
+                        <span class="progress-value">42%</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Compute Progress Ring Colors -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressCircles = document.querySelectorAll('.progress-circle');
+
+            progressCircles.forEach(circle => {
+                const valueElem = circle.querySelector('.progress-value');
+                // Extract only numbers string from like '66%'
+                const percentStr = valueElem.innerText.replace('%', '').trim();
+                const percent = parseInt(percentStr, 10);
+
+                let color = '#E74C3C'; // Red: < 50
+                if (percent >= 80) {
+                    color = '#1ABC9C'; // Green: >= 80
+                } else if (percent >= 50) {
+                    color = '#FDCB6E'; // Orange: 50 - 79
+                }
+
+                // Dynamically inject the mapped CSS Variable
+                circle.style.setProperty('--color', color);
+            });
+        });
+    </script>
+</body>
+
+</html>
