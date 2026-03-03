@@ -386,7 +386,7 @@
             <!-- Floating UI: Bottom Left Area Information -->
             <div class="floating-card area-card">
                 <span class="area-label">المساحة</span>
-                <span class="area-value">3000 م²</span>
+                <span class="area-value" id="farmAreaValue">--</span>
             </div>
 
             <!-- Floating UI: Bottom Right Status Legend -->
@@ -443,6 +443,31 @@
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP',
             maxZoom: 19
         }).addTo(map);
+
+        // جلب المزرعة المختارة
+        const selectedFarm = JSON.parse(localStorage.getItem("selectedFarm"));
+
+        // تحديث المساحة من بيانات المزرعة
+        if (selectedFarm && selectedFarm.farmArea) {
+            const areaElement = document.getElementById("farmAreaValue");
+            areaElement.innerText = Number(selectedFarm.farmArea).toLocaleString() + " م²";
+        }
+
+        if (selectedFarm && selectedFarm.polygonCoordinates) {
+
+            const latlngs = selectedFarm.polygonCoordinates.map(coord => [
+                coord.lat,
+                coord.lng
+            ]);
+
+            const polygon = L.polygon(latlngs, {
+                color: "#FDCB6E",
+                fillColor: "#FDCB6E",
+                fillOpacity: 0.3
+            }).addTo(map);
+
+            map.fitBounds(polygon.getBounds());
+        }
 
         // Generate Sample Grid defining Palm Positions
         const farmCenter = [25.3833, 49.5833];

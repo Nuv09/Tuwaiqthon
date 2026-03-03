@@ -492,9 +492,7 @@
                         <!-- Map Toolbar below map -->
                         <div class="map-controls">
                             <div class="map-buttons">
-                                <button type="button" class="btn-outline" onclick="removeLastShape()">
-                                    <i class="fa-solid fa-rotate-left"></i> تراجع
-                                </button>
+                            
                                 <button type="button" class="btn-outline" onclick="clearAllShapes()">
                                     <i class="fa-solid fa-trash"></i> مسح الكل
                                 </button>
@@ -620,17 +618,15 @@
                 polygonCoordinates: currentPolygonCoordinates
             };
 
-            // Log output to console as requested
-            console.log("=== تفاصيل المزرعة الجديدة ===");
-            console.log("البيانات النصية:", formData);
+           let farms = JSON.parse(localStorage.getItem("farms")) || [];
 
-            if (formData.polygonCoordinates && formData.polygonCoordinates.length > 0) {
-                console.log("إحداثيات النطاق (مصفوفة JS):", formData.polygonCoordinates);
-            } else {
-                console.log("ملاحظة: لم يتم رسم نطاق المزرعة على الخريطة.");
-            }
+farms.push(formData);
 
-            alert('تم عرض بيانات المزرعة في Console (F12) بنجاح!');
+localStorage.setItem("farms", JSON.stringify(farms));
+
+alert("تم إضافة المزرعة بنجاح!");
+
+window.location.href = "Home_page.html";
         }
     </script>
 </body>

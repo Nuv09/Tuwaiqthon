@@ -399,98 +399,57 @@
         <!-- Farms List -->
         <div class="farms-list">
 
-            <!-- Farm Card 1 -->
-            <a href="map.html" class="farm-card">
-                <div class="card-info">
-                    <div class="farm-name">مزرعة النخيل الذهبي</div>
-                    <div class="farm-location">
-                        <i class="fa-solid fa-location-dot"></i>
-                        الرياض، السعودية
-                    </div>
-                </div>
-                <div class="card-stats">
-                    <!-- Progress set to 66% -->
-                    <div class="progress-circle" style="--progress: 66%">
-                        <span class="progress-value">66%</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Farm Card 2 -->
-            <a href="map.html" class="farm-card">
-                <div class="card-info">
-                    <div class="farm-name">مزرعة واحة الأحساء</div>
-                    <div class="farm-location">
-                        <i class="fa-solid fa-location-dot"></i>
-                        الأحساء، المنطقة الشرقية
-                    </div>
-                </div>
-                <div class="card-stats">
-                    <!-- Progress set to 100% -->
-                    <div class="progress-circle" style="--progress: 100%">
-                        <span class="progress-value">100%</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Farm Card 3 -->
-            <a href="map.html" class="farm-card">
-                <div class="card-info">
-                    <div class="farm-name">مزرعة القصيم الكبرى</div>
-                    <div class="farm-location">
-                        <i class="fa-solid fa-location-dot"></i>
-                        بريدة، القصيم
-                    </div>
-                </div>
-                <div class="card-stats">
-                    <!-- Progress set to 85% -->
-                    <div class="progress-circle" style="--progress: 85%">
-                        <span class="progress-value">85%</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Farm Card 4 -->
-            <a href="map.html" class="farm-card">
-                <div class="card-info">
-                    <div class="farm-name">مزرعة طيبة الطيبة</div>
-                    <div class="farm-location">
-                        <i class="fa-solid fa-location-dot"></i>
-                        المدينة المنورة
-                    </div>
-                </div>
-                <div class="card-stats">
-                    <!-- Progress set to 42% -->
-                    <div class="progress-circle" style="--progress: 42%">
-                        <span class="progress-value">42%</span>
-                    </div>
-                </div>
-            </a>
-
+            <div class="farms-list" id="farmsList"></div>
         </div>
     </div>
 
     <!-- Compute Progress Ring Colors -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const progressCircles = document.querySelectorAll('.progress-circle');
 
-            progressCircles.forEach(circle => {
-                const valueElem = circle.querySelector('.progress-value');
-                // Extract only numbers string from like '66%'
-                const percentStr = valueElem.innerText.replace('%', '').trim();
-                const percent = parseInt(percentStr, 10);
+            const farms = JSON.parse(localStorage.getItem("farms")) || [];
+            const farmsList = document.getElementById("farmsList");
 
-                let color = '#E74C3C'; // Red: < 50
-                if (percent >= 80) {
-                    color = '#1ABC9C'; // Green: >= 80
-                } else if (percent >= 50) {
-                    color = '#FDCB6E'; // Orange: 50 - 79
-                }
+            farms.forEach((farm, index) => {
 
-                // Dynamically inject the mapped CSS Variable
-                circle.style.setProperty('--color', color);
+                // نولد نسبة عشوائية مؤقتًا
+                const percent = Math.floor(Math.random() * 40) + 60;
+
+                let color = '#E74C3C';
+                if (percent >= 80) color = '#1ABC9C';
+                else if (percent >= 50) color = '#FDCB6E';
+
+                const farmCard = document.createElement("a");
+                farmCard.href = "#";
+                farmCard.className = "farm-card";
+
+                farmCard.addEventListener("click", (e) => {
+                    e.preventDefault();
+
+                    // نخزن المزرعة المختارة
+                    localStorage.setItem("selectedFarm", JSON.stringify(farm));
+
+                    // نروح لصفحة الخريطة
+                    window.location.href = "map.html";
+                });
+                farmCard.innerHTML = `
+            <div class="card-info">
+                <div class="farm-name">${farm.farmName}</div>
+                <div class="farm-location">
+                    <i class="fa-solid fa-location-dot"></i>
+                    ${farm.region}
+                </div>
+            </div>
+            <div class="card-stats">
+                <div class="progress-circle" style="--progress: ${percent}%; --color: ${color}">
+                    <span class="progress-value">${percent}%</span>
+                </div>
+            </div>
+        `;
+
+                farmsList.appendChild(farmCard);
             });
+
         });
     </script>
 </body>
