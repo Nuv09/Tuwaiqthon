@@ -453,6 +453,53 @@
             areaElement.innerText = Number(selectedFarm.farmArea).toLocaleString() + " م²";
         }
 
+        // Generate Sample Grid defining Palm Positions
+        // const farmCenter = [25.3833, 49.5833];
+        // const palms = [];
+        // const gridSize = 12;
+        // const spacing = 0.00012;
+
+        // for (let i = -gridSize / 2; i < gridSize / 2; i++) {
+        //     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
+        //         // Skiping some nodes adds organic farm feeling
+        //         if (Math.random() > 0.85) continue;
+
+        //         const rand = Math.random();
+        //         let status = 'healthy';
+        //         if (rand > 0.90) status = 'infected';
+        //         else if (rand > 0.75) status = 'suspect';
+
+        //         palms.push({
+        //             lat: farmCenter[0] + i * spacing + (Math.random() * 0.00004 - 0.00002),
+        //             lng: farmCenter[1] + j * spacing + (Math.random() * 0.00004 - 0.00002),
+        //             status: status,
+        //             predictStatus: calculateTrend(status)
+        //         });
+        //     }
+        // }
+
+        // // Dummy algorithmic logic for Prediction Toggle
+        // function calculateTrend(currentStatus) {
+        //     if (currentStatus === 'infected') return 'infected';
+        //     if (currentStatus === 'suspect') return Math.random() > 0.4 ? 'infected' : 'suspect';
+        //     return Math.random() > 0.85 ? 'suspect' : 'healthy';
+        // }
+
+        // // Render Data overlays
+        // const circles = [];
+        // palms.forEach(palm => {
+        //     const circle = L.circle([palm.lat, palm.lng], {
+        //         color: mapColors.current[palm.status],
+        //         fillColor: mapColors.current[palm.status],
+        //         fillOpacity: 0.65,
+        //         radius: 4.5,
+        //         weight: 1.5
+        //     }).addTo(map);
+
+        //     circle.palmData = palm; // cache state
+        //     circles.push(circle);
+        // });
+
         if (selectedFarm && selectedFarm.polygonCoordinates) {
 
             const latlngs = selectedFarm.polygonCoordinates.map(coord => [
@@ -463,97 +510,109 @@
             const polygon = L.polygon(latlngs, {
                 color: "#FDCB6E",
                 fillColor: "#FDCB6E",
-                fillOpacity: 0.3
+                fillOpacity: 0.2
             }).addTo(map);
 
             map.fitBounds(polygon.getBounds());
+
+            // 👇 هنا نبدأ نبني Grid داخل المزرعة
+            generateFakeNDVIPixels(polygon);
         }
+        function isPointInPolygon(point, polygon) {
+            const x = point.lng;
+            const y = point.lat;
 
-        // Generate Sample Grid defining Palm Positions
-        const farmCenter = [25.3833, 49.5833];
-        const palms = [];
-        const gridSize = 12;
-        const spacing = 0.00012;
+            const vs = polygon.getLatLngs()[0];
 
-        for (let i = -gridSize / 2; i < gridSize / 2; i++) {
-            for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-                // Skiping some nodes adds organic farm feeling
-                if (Math.random() > 0.85) continue;
+            let inside = false;
+            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                const xi = vs[i].lng, yi = vs[i].lat;
+                const xj = vs[j].lng, yj = vs[j].lat;
 
-                const rand = Math.random();
-                let status = 'healthy';
-                if (rand > 0.90) status = 'infected';
-                else if (rand > 0.75) status = 'suspect';
+                const intersect = ((yi > y) !== (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
 
-                palms.push({
-                    lat: farmCenter[0] + i * spacing + (Math.random() * 0.00004 - 0.00002),
-                    lng: farmCenter[1] + j * spacing + (Math.random() * 0.00004 - 0.00002),
-                    status: status,
-                    predictStatus: calculateTrend(status)
-                });
+                if (intersect) inside = !inside;
+            }
+
+            return inside;
+        }
+function generateFakeNDVIPixels(polygon) {
+
+    const bounds = polygon.getBounds();
+
+    const south = bounds.getSouth();
+    const north = bounds.getNorth();
+    const west = bounds.getWest();
+    const east = bounds.getEast();
+
+    const density = 15; // كل ما زاد = أنعم
+
+    const latStep = (north - south) / density;
+    const lngStep = (east - west) / density;
+
+    for (let lat = south; lat < north; lat += latStep) {
+        for (let lng = west; lng < east; lng += lngStep) {
+
+            const point = L.latLng(lat, lng);
+
+            if (isPointInPolygon(point, polygon)) {
+
+                const randomNDVI = Math.random();
+
+                let color = "#ef4444";
+                if (randomNDVI > 0.6) color = "#22c55e";
+                else if (randomNDVI > 0.4) color = "#FDCB6E";
+
+                L.circleMarker(point, {
+                    radius: 8,   // حجم البكسل
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.45,
+                    weight: 0
+                }).addTo(map);
             }
         }
-
-        // Dummy algorithmic logic for Prediction Toggle
-        function calculateTrend(currentStatus) {
-            if (currentStatus === 'infected') return 'infected';
-            if (currentStatus === 'suspect') return Math.random() > 0.4 ? 'infected' : 'suspect';
-            return Math.random() > 0.85 ? 'suspect' : 'healthy';
-        }
-
-        // Render Data overlays
-        const circles = [];
-        palms.forEach(palm => {
-            const circle = L.circle([palm.lat, palm.lng], {
-                color: mapColors.current[palm.status],
-                fillColor: mapColors.current[palm.status],
-                fillOpacity: 0.65,
-                radius: 4.5,
-                weight: 1.5
-            }).addTo(map);
-
-            circle.palmData = palm; // cache state
-            circles.push(circle);
-        });
-
+    }
+}
         // Reactive UI Toggle Event
-        const modeToggle = document.getElementById('modeToggle');
-        const modeLabel = document.getElementById('modeLabel');
+        // const modeToggle = document.getElementById('modeToggle');
+        // const modeLabel = document.getElementById('modeLabel');
 
-        modeToggle.addEventListener('change', (e) => {
-            const isPredict = e.target.checked;
+        // modeToggle.addEventListener('change', (e) => {
+        //     const isPredict = e.target.checked;
 
-            if (isPredict) {
-                // Switch to Warning/Prediction Mode
-                modeLabel.innerText = 'وضع التنبؤ';
-                modeLabel.style.color = mapColors.predict.suspect;
+        //     if (isPredict) {
+        //         // Switch to Warning/Prediction Mode
+        //         modeLabel.innerText = 'وضع التنبؤ';
+        //         modeLabel.style.color = mapColors.predict.suspect;
 
-                circles.forEach(c => {
-                    const nextStatus = c.palmData.predictStatus;
-                    const cColor = mapColors.predict[nextStatus];
-                    c.setStyle({
-                        color: cColor,
-                        fillColor: cColor,
-                        fillOpacity: 0.75
-                    });
-                });
+        //         circles.forEach(c => {
+        //             const nextStatus = c.palmData.predictStatus;
+        //             const cColor = mapColors.predict[nextStatus];
+        //             c.setStyle({
+        //                 color: cColor,
+        //                 fillColor: cColor,
+        //                 fillOpacity: 0.75
+        //             });
+        //         });
 
-            } else {
-                // Revert to General Current Mode
-                modeLabel.innerText = 'الوضع الحالي';
-                modeLabel.style.color = 'var(--text-light)';
+        //     } else {
+        //         // Revert to General Current Mode
+        //         modeLabel.innerText = 'الوضع الحالي';
+        //         modeLabel.style.color = 'var(--text-light)';
 
-                circles.forEach(c => {
-                    const status = c.palmData.status;
-                    const cColor = mapColors.current[status];
-                    c.setStyle({
-                        color: cColor,
-                        fillColor: cColor,
-                        fillOpacity: 0.65
-                    });
-                });
-            }
-        });
+        //         circles.forEach(c => {
+        //             const status = c.palmData.status;
+        //             const cColor = mapColors.current[status];
+        //             c.setStyle({
+        //                 color: cColor,
+        //                 fillColor: cColor,
+        //                 fillOpacity: 0.65
+        //             });
+        //         });
+        //     }
+        // });
     </script>
 </body>
 
