@@ -4,7 +4,10 @@ from pydantic import BaseModel
 from typing import List, Literal
 import ee
 
-ee.Initialize()
+try:
+    ee.Initialize()
+except Exception:
+    pass
 
 app = FastAPI()
 
