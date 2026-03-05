@@ -413,6 +413,7 @@
     <!-- Leaflet JS Library -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+
         // System Config Palette
         const mapColors = {
             current: {
@@ -427,79 +428,41 @@
             }
         };
 
-        // Initialize Map component
+        // Initialize Map
         const map = L.map('map', {
             zoomControl: false,
             attributionControl: true
-        }).setView([25.3833, 49.5833], 18); // Centered on test location (Al Ahsa bounds)
+        }).setView([25.3833, 49.5833], 18);
 
-        // Relocate Zoom Control
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(map);
+        // Zoom control
+        L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // Map Tile Layer (High Resolution Satellite via Esri)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP',
-            maxZoom: 19
-        }).addTo(map);
+        // Satellite tiles
+        L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            {
+                attribution: 'Tiles © Esri',
+                maxZoom: 19
+            }).addTo(map);
 
-        // جلب المزرعة المختارة
+        // Layers
+        let currentLayer = L.layerGroup().addTo(map);
+        let forecastLayer = L.layerGroup();
+
+        // Global polygon
+        let polygon = null;
+
+        // Get farm
         const selectedFarm = JSON.parse(localStorage.getItem("selectedFarm"));
 
-        // تحديث المساحة من بيانات المزرعة
+        // Update area
         if (selectedFarm && selectedFarm.farmArea) {
             const areaElement = document.getElementById("farmAreaValue");
-            areaElement.innerText = Number(selectedFarm.farmArea).toLocaleString() + " م²";
+            areaElement.innerText =
+                Number(selectedFarm.farmArea).toLocaleString() + " م²";
         }
 
-        // Generate Sample Grid defining Palm Positions
-        // const farmCenter = [25.3833, 49.5833];
-        // const palms = [];
-        // const gridSize = 12;
-        // const spacing = 0.00012;
-
-        // for (let i = -gridSize / 2; i < gridSize / 2; i++) {
-        //     for (let j = -gridSize / 2; j < gridSize / 2; j++) {
-        //         // Skiping some nodes adds organic farm feeling
-        //         if (Math.random() > 0.85) continue;
-
-        //         const rand = Math.random();
-        //         let status = 'healthy';
-        //         if (rand > 0.90) status = 'infected';
-        //         else if (rand > 0.75) status = 'suspect';
-
-        //         palms.push({
-        //             lat: farmCenter[0] + i * spacing + (Math.random() * 0.00004 - 0.00002),
-        //             lng: farmCenter[1] + j * spacing + (Math.random() * 0.00004 - 0.00002),
-        //             status: status,
-        //             predictStatus: calculateTrend(status)
-        //         });
-        //     }
-        // }
-
-        // // Dummy algorithmic logic for Prediction Toggle
-        // function calculateTrend(currentStatus) {
-        //     if (currentStatus === 'infected') return 'infected';
-        //     if (currentStatus === 'suspect') return Math.random() > 0.4 ? 'infected' : 'suspect';
-        //     return Math.random() > 0.85 ? 'suspect' : 'healthy';
-        // }
-
-        // // Render Data overlays
-        // const circles = [];
-        // palms.forEach(palm => {
-        //     const circle = L.circle([palm.lat, palm.lng], {
-        //         color: mapColors.current[palm.status],
-        //         fillColor: mapColors.current[palm.status],
-        //         fillOpacity: 0.65,
-        //         radius: 4.5,
-        //         weight: 1.5
-        //     }).addTo(map);
-
-        //     circle.palmData = palm; // cache state
-        //     circles.push(circle);
-        // });
-
+        // Draw polygon
         if (selectedFarm && selectedFarm.polygonCoordinates) {
 
             const latlngs = selectedFarm.polygonCoordinates.map(coord => [
@@ -507,7 +470,7 @@
                 coord.lng
             ]);
 
-            const polygon = L.polygon(latlngs, {
+            polygon = L.polygon(latlngs, {
                 color: "#FDCB6E",
                 fillColor: "#FDCB6E",
                 fillOpacity: 0.2
@@ -515,17 +478,21 @@
 
             map.fitBounds(polygon.getBounds());
 
-            // 👇 هنا نبدأ نبني Grid داخل المزرعة
-            generateFakeNDVIPixels(polygon);
+            loadCurrentLayer();
         }
+
+        // Point in polygon
         function isPointInPolygon(point, polygon) {
+
             const x = point.lng;
             const y = point.lat;
 
             const vs = polygon.getLatLngs()[0];
 
             let inside = false;
+
             for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+
                 const xi = vs[i].lng, yi = vs[i].lat;
                 const xj = vs[j].lng, yj = vs[j].lat;
 
@@ -537,82 +504,114 @@
 
             return inside;
         }
-function generateFakeNDVIPixels(polygon) {
 
-    const bounds = polygon.getBounds();
+        // Fetch NDVI
+        async function fetchNDVI(view) {
 
-    const south = bounds.getSouth();
-    const north = bounds.getNorth();
-    const west = bounds.getWest();
-    const east = bounds.getEast();
+            const payload = {
+                polygonCoordinates: selectedFarm.polygonCoordinates,
+                view: view
+            };
 
-    const density = 15; // كل ما زاد = أنعم
+            const res = await fetch(
+                "http://127.0.0.1:8000/api/analyze",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                }
+            );
 
-    const latStep = (north - south) / density;
-    const lngStep = (east - west) / density;
-
-    for (let lat = south; lat < north; lat += latStep) {
-        for (let lng = west; lng < east; lng += lngStep) {
-
-            const point = L.latLng(lat, lng);
-
-            if (isPointInPolygon(point, polygon)) {
-
-                const randomNDVI = Math.random();
-
-                let color = "#ef4444";
-                if (randomNDVI > 0.6) color = "#22c55e";
-                else if (randomNDVI > 0.4) color = "#FDCB6E";
-
-                L.circleMarker(point, {
-                    radius: 8,   // حجم البكسل
-                    color: color,
-                    fillColor: color,
-                    fillOpacity: 0.45,
-                    weight: 0
-                }).addTo(map);
-            }
+            const data = await res.json();
+            return data.points;
         }
-    }
-}
-        // Reactive UI Toggle Event
-        // const modeToggle = document.getElementById('modeToggle');
-        // const modeLabel = document.getElementById('modeLabel');
 
-        // modeToggle.addEventListener('change', (e) => {
-        //     const isPredict = e.target.checked;
+        // NDVI color
+        function colorFromNDVI(ndvi) {
 
-        //     if (isPredict) {
-        //         // Switch to Warning/Prediction Mode
-        //         modeLabel.innerText = 'وضع التنبؤ';
-        //         modeLabel.style.color = mapColors.predict.suspect;
+            if (ndvi > 0.6) return "#22c55e";
+            if (ndvi > 0.4) return "#FDCB6E";
+            return "#ef4444";
+        }
 
-        //         circles.forEach(c => {
-        //             const nextStatus = c.palmData.predictStatus;
-        //             const cColor = mapColors.predict[nextStatus];
-        //             c.setStyle({
-        //                 color: cColor,
-        //                 fillColor: cColor,
-        //                 fillOpacity: 0.75
-        //             });
-        //         });
+        function colorFromStatus(status) {
 
-        //     } else {
-        //         // Revert to General Current Mode
-        //         modeLabel.innerText = 'الوضع الحالي';
-        //         modeLabel.style.color = 'var(--text-light)';
+            if (status === "healthy") return "#22c55e";
+            if (status === "stressed") return "#FDCB6E";
+            return "#ef4444";
 
-        //         circles.forEach(c => {
-        //             const status = c.palmData.status;
-        //             const cColor = mapColors.current[status];
-        //             c.setStyle({
-        //                 color: cColor,
-        //                 fillColor: cColor,
-        //                 fillOpacity: 0.65
-        //             });
-        //         });
-        //     }
-        // });
+        }
+        // Render points
+        function renderPoints(layer, points) {
+
+            layer.clearLayers();
+
+            points.forEach(p => {
+
+                const point = L.latLng(p.lat, p.lng);
+
+                if (isPointInPolygon(point, polygon)) {
+
+                    const color = colorFromStatus(p.status);
+
+                    L.circleMarker(point, {
+                        radius: 2,
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.5,
+                        weight: 0
+                    }).addTo(layer);
+
+                }
+
+            });
+        }
+
+        // Load current
+        async function loadCurrentLayer() {
+
+            const points = await fetchNDVI("current");
+            renderPoints(currentLayer, points);
+
+        }
+
+        // Load forecast
+        async function loadForecastLayer() {
+
+            const points = await fetchNDVI("forecast");
+            renderPoints(forecastLayer, points);
+
+        }
+
+        // Toggle
+        const modeToggle = document.getElementById('modeToggle');
+        const modeLabel = document.getElementById('modeLabel');
+
+        modeToggle.addEventListener('change', async (e) => {
+
+            const predict = e.target.checked;
+
+            if (predict) {
+
+                modeLabel.innerText = 'وضع التنبؤ';
+
+                await loadForecastLayer();
+
+                map.removeLayer(currentLayer);
+                map.addLayer(forecastLayer);
+
+            }
+            else {
+
+                modeLabel.innerText = 'الوضع الحالي';
+
+                map.removeLayer(forecastLayer);
+                map.addLayer(currentLayer);
+
+            }
+
+        });
+
     </script>
 </body>
 
