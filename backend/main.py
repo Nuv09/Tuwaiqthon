@@ -7,7 +7,7 @@ import ee
 
 app = FastAPI()
 
-# هذا يخلي FastAPI يعرض ملفات الموقع
+# عرض ملفات الموقع
 app.mount("/", StaticFiles(directory="..", html=True), name="static")
 
 try:
