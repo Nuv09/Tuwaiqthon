@@ -1,19 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Literal
 import ee
+
+app = FastAPI()
+
+# هذا يخلي FastAPI يعرض ملفات الموقع
+app.mount("/", StaticFiles(directory="..", html=True), name="static")
 
 try:
     ee.Initialize()
 except Exception:
     print("Earth Engine not authenticated on server")
-
-app = FastAPI()
-
-@app.get("/")
-def home():
-    return {"message": "Aseeb API is running"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,7 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class Point(BaseModel):
     lat: float
