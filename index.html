@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عسيب - تابع صحة نخيلك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;800&family=Almarai:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Set 1: اللون الداكن جداً للخلفية [cite: 12] */
+            --primary-bg: #344E41;
+            /* Set 2: اللون العشبي للزر أو اللمسات  */
+            --accent: #A3B18A;
+            /* لجعل الزجاج شفافاً وصافياً تماماً */
+            --glass-white: rgba(255, 255, 255, 0.01);
+            /* استخدام اللون البيج الفاتح للحدود  */
+            --glass-border: rgba(237, 224, 212, 0.2);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+        }
+
+        /* الفيديو الخلفي */
+        .video-background {
+            position: absolute;
+            /* استخدام absolute هو الأفضل للفيديو الخلفي */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            /* يغطي الشاشة بالكامل بدون تشويه */
+            filter: brightness(0.6) contrast(1.1);
+            /* تعميق الألوان لبروز الزجاج */
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+        }
+
+        /* الحاوية الزجاجية المطورة */
+        .glass-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            /* تأثير الزجاج العميق */
+            background: var(--glass-white);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+
+            /* حواف الزجاج المعتمة */
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+
+            border-radius: 50px;
+            padding: 70px 90px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation: containerAppear 1.5s ease-out;
+        }
+
+        .glass-container:hover {
+            transform: translateY(-8px) scale(1.01);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        /* الشعار */
+        .logo {
+            width: 350px;
+            margin-bottom: 35px;
+            filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.4));
+            animation: fadeInUp 1s ease-out 0.3s backwards;
+        }
+
+        /* النص */
+        .subtitle {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #EDE0D4;
+            margin-bottom: 50px;
+            text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.5px;
+            animation: fadeInUp 1s ease-out 0.6s backwards;
+        }
+
+        /* الزر الفخم */
+        .start-btn {
+            padding: 18px 70px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #EDE0D4;
+            text-decoration: none;
+            border-radius: 100px;
+            background: linear-gradient(135deg, #3A5A40 0%, #A3B18A 100%);
+            border: none;
+            box-shadow: 0 10px 30px rgba(58, 90, 64, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fadeInUp 1s ease-out 0.9s backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 15px 40px rgba(163, 177, 138, 0.6);
+            letter-spacing: 1px;
+        }
+
+        /* لمعة الزر المتنقلة */
+        .start-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(30deg);
+            transition: all 0.6s;
+            opacity: 0.5;
+        }
+
+        .start-btn:hover::after {
+            left: 130%;
+        }
+
+        /* الأنميشن */
+        @keyframes containerAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+                backdrop-filter: blur(0px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+                backdrop-filter: blur(25px);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* تجاوب الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .glass-container {
+                padding: 50px 30px;
+                width: 85%;
+                border-radius: 35px;
+            }
+
+            .logo {
+                width: 180px;
+            }
+
+            .subtitle {
+                font-size: 1.8rem;
+                margin-bottom: 40px;
+            }
+
+            .start-btn {
+                padding: 15px 50px;
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <video autoplay muted loop playsinline id="bgVideo" class="video-background"
+        src="https://res.cloudinary.com/dwdcbrjrr/video/upload/v1772747380/introvideo_dwxdex.mp4">
+    </video>
+
+    <div class="content">
+        <div class="glass-container">
+            <img src="logo4.png" alt="شعار عسيب" class="logo">
+            <div class="subtitle">تابع صحة نخيلك</div>
+            <a href="add_farm.html" class="start-btn">ابدأ الآن</a>
+        </div>
+    </div>
+
+</body>
+
+</html>
