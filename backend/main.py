@@ -11,6 +11,10 @@ except Exception:
 
 app = FastAPI()
 
+@app.get("/")
+def home():
+    return {"message": "Aseeb API is running"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
