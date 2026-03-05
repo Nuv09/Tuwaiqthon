@@ -7,7 +7,7 @@ import ee
 try:
     ee.Initialize()
 except Exception:
-    pass
+    print("Earth Engine not authenticated on server")
 
 app = FastAPI()
 
