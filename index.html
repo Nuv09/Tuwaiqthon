@@ -73,12 +73,13 @@
             border: 1px solid var(--glass-border);
             border-top: 1px solid rgba(255, 255, 255, 0.3);
             border-left: 1px solid rgba(255, 255, 255, 0.3);
-
-            border-radius: 50px;
-            padding: 70px 90px;
+border-radius: 40px;
+padding: 45px 65px;
+max-width: 480px;
+width: 90%;
+animation: containerAppear 0.5s ease-out 0.3s backwards;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-            animation: containerAppear 1.5s ease-out;
         }
 
         .glass-container:hover {
@@ -90,36 +91,39 @@
 
         /* الشعار */
         .logo {
-            width: 350px;
-            margin-bottom: 35px;
+           width: 180px;
+margin-bottom: 20px;
+animation: fadeInUp 0.5s ease-out 0.3s backwards;
             filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.4));
-            animation: fadeInUp 1s ease-out 0.3s backwards;
+          
         }
 
         /* النص */
         .subtitle {
-            font-size: 2.4rem;
+           font-size: 1.8rem;
+margin-bottom: 35px;
+animation: fadeInUp 0.5s ease-out 0.3s backwards;
             font-weight: 800;
             color: #EDE0D4;
-            margin-bottom: 50px;
             text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
             letter-spacing: 0.5px;
-            animation: fadeInUp 1s ease-out 0.6s backwards;
+            
         }
 
         /* الزر الفخم */
         .start-btn {
-            padding: 18px 70px;
-            font-size: 1.6rem;
+          padding: 14px 55px;
+font-size: 1.3rem;
+background: linear-gradient(135deg, #3A5A40 0%, #A3B18A 100%);
+animation: fadeInUp 0.5s ease-out 0.3s backwards;
             font-weight: 800;
             color: #EDE0D4;
             text-decoration: none;
             border-radius: 100px;
-            background: linear-gradient(135deg, #3A5A40 0%, #A3B18A 100%);
+            background: linear-gradient(135deg, #3A5A40 0%, #A3B18A 0%);
             border: none;
             box-shadow: 0 10px 30px rgba(58, 90, 64, 0.4);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeInUp 1s ease-out 0.9s backwards;
             position: relative;
             overflow: hidden;
         }
@@ -204,12 +208,12 @@
 
 
     <video autoplay muted loop playsinline id="bgVideo" class="video-background"
-        src="https://res.cloudinary.com/dwdcbrjrr/video/upload/v1772747380/introvideo_dwxdex.mp4">
+        src="videointroo2.mp4">
     </video>
 
     <div class="content">
         <div class="glass-container">
-            <img src="logo4.png" alt="شعار عسيب" class="logo">
+            <img src="logo5.png" alt="شعار عسيب" class="logo">
             <div class="subtitle">تابع صحة نخيلك</div>
             <a href="add_farm.html" class="start-btn">ابدأ الآن</a>
         </div>
