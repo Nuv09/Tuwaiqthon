@@ -362,7 +362,7 @@
         <!-- Optional Top Header Padding Space -->
         <div class="action-bar">
             <!-- Back Button OUTSIDE Map -->
-            <a href="Home_page.html" class="back-button">
+            <a href="/home" class="back-button">
                 العودة للرئيسية
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
@@ -514,7 +514,7 @@
             };
 
             const res = await fetch(
-                "http://127.0.0.1:8000/api/analyze",
+                "/api/analyze",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

@@ -1,15 +1,38 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Literal
 import ee
+import os
+
+app = FastAPI()
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+app.mount("/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), name="images")
+
+@app.get("/")
+def read_landing():
+    return FileResponse(os.path.join(BASE_DIR, "index.html"))
+
+@app.get("/home")
+def read_home():
+    return FileResponse(os.path.join(BASE_DIR, "Home_page.html"))
+
+@app.get("/add_farm")
+def read_add_farm():
+    return FileResponse(os.path.join(BASE_DIR, "add_farm.html"))
+
+@app.get("/map")
+def read_map():
+    return FileResponse(os.path.join(BASE_DIR, "map.html"))
 
 try:
     ee.Initialize()
 except Exception:
     print("Earth Engine not authenticated on server")
-
-app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,7 +41,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class Point(BaseModel):
     lat: float
