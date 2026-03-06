@@ -1,14 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Literal
 import ee
+import os
 
 app = FastAPI()
 
-# عرض ملفات الموقع
-app.mount("/", StaticFiles(directory="..", html=True), name="static")
+app.mount("/images", StaticFiles(directory="../images"), name="images")
+
+@app.get("/")
+def read_index():
+    return FileResponse("../index.html")
+
+@app.get("/map")
+def read_map():
+    return FileResponse("../map.html")
 
 try:
     ee.Initialize()
