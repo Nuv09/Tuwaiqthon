@@ -597,7 +597,7 @@
             color: var(--green-light) !important;
         }
 
-                .main-navbar {
+        .main-navbar {
             position: fixed;
             top: 0;
             left: 0;
@@ -658,7 +658,7 @@
     </nav> -->
 
 
-        <header class="main-navbar">
+    <header class="main-navbar">
         <div class="nav-brand">
             <img src="/images/AseebLogo.png" alt="عسيب" style="height: 100px; width:auto; mix-blend-mode:screen;">
         </div>
@@ -916,6 +916,26 @@
 
             // progress bar
             const hp = (h / n * 100).toFixed(1);
+
+            // حفظ النتيجة داخل المزرعة
+            let farms = JSON.parse(localStorage.getItem("farms")) || [];
+            let selectedFarm = JSON.parse(localStorage.getItem("selectedFarm"));
+
+            if (selectedFarm) {
+
+                farms = farms.map(f => {
+                    if (f.farmName === selectedFarm.farmName) {
+
+                        f.healthScore = Number(hp);
+                        f.stressScore = (s / n * 100).toFixed(1);
+                        f.criticalScore = (c / n * 100).toFixed(1);
+
+                    }
+                    return f;
+                });
+
+                localStorage.setItem("farms", JSON.stringify(farms));
+            }
             const sp = (s / n * 100).toFixed(1);
             const cp = (c / n * 100).toFixed(1);
             document.getElementById('progTrack').innerHTML = `
