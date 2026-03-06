@@ -11,23 +11,30 @@ app = FastAPI()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-app.mount("/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), name="images")
+app.mount(
+    "/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), name="images"
+)
+
 
 @app.get("/")
 def read_landing():
     return FileResponse(os.path.join(BASE_DIR, "index.html"))
 
+
 @app.get("/home")
 def read_home():
     return FileResponse(os.path.join(BASE_DIR, "Home_page.html"))
+
 
 @app.get("/add_farm")
 def read_add_farm():
     return FileResponse(os.path.join(BASE_DIR, "add_farm.html"))
 
+
 @app.get("/map")
 def read_map():
     return FileResponse(os.path.join(BASE_DIR, "map.html"))
+
 
 try:
     ee.Initialize()
@@ -41,6 +48,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 class Point(BaseModel):
     lat: float
@@ -58,8 +66,8 @@ def get_current_ndvi(region):
     image = (
         ee.ImageCollection("COPERNICUS/S2_SR")
         .filterBounds(region)
-        .filterDate("2024-01-01", "2024-12-31")
-        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20))
+        .filterDate("2022-01-01", "2025-12-31")
+        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 30))
         .sort("system:time_start", False)
         .first()
     )
@@ -75,8 +83,8 @@ def get_forecast_ndvi(region):
     collection = (
         ee.ImageCollection("COPERNICUS/S2_SR")
         .filterBounds(region)
-        .filterDate("2023-10-01", "2024-12-31")
-        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20))
+        .filterDate("2022-01-01", "2025-12-31")
+        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 30))
         .sort("system:time_start", False)
         .limit(2)
     )
@@ -107,14 +115,13 @@ def get_ndvi_points(polygon_coords, view):
         ndvi = get_current_ndvi(region)
 
     samples = (
-        ndvi
-        .clip(region)
+        ndvi.clip(region)
         .sample(
             region=region,
-            scale=15,
+            scale=20,
             geometries=True,
-            projection='EPSG:4326',
-            tileScale=2
+            projection="EPSG:4326",
+            tileScale=2,
         )
         .getInfo()
     )
@@ -124,7 +131,7 @@ def get_ndvi_points(polygon_coords, view):
     for f in samples["features"]:
 
         coords = f["geometry"]["coordinates"]
-        value  = f["properties"].get("NDVI")
+        value = f["properties"].get("NDVI")
 
         if value is None:
             continue
@@ -136,21 +143,21 @@ def get_ndvi_points(polygon_coords, view):
         else:
             status = "critical"
 
-        points.append({
-            "lat":    coords[1],
-            "lng":    coords[0],
-            "ndvi":   round(value, 4),
-            "status": status
-        })
+        points.append(
+            {
+                "lat": coords[1],
+                "lng": coords[0],
+                "ndvi": round(value, 4),
+                "status": status,
+            }
+        )
 
     return points
+
 
 @app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
 
     points = get_ndvi_points(req.polygonCoordinates, req.view)
 
-    return {
-        "view": req.view,
-        "points": points
-    }
+    return {"view": req.view, "points": points}
