@@ -1,618 +1,695 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAAF - خريطة المزرعة</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Google Fonts for Typography -->
+    <title>عسيب - خريطة المزرعة</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
     <style>
         :root {
-            /* Theme Colors */
-            --primary-dark: #021a16;
-            --primary: #042C25;
-            --primary-light: #064036;
-            --accent: #FDCB6E;
-            --text-light: #FFF6E0;
-            --bg-gradient: linear-gradient(135deg, #042C25 0%, #064036 100%);
-
-            /* UI Elements */
-            --card-bg: rgba(4, 44, 37, 0.85);
-            --card-border: rgba(254, 187, 151, 0.2);
-            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
-
-            /* Map Overlay Colors */
-            --color-healthy: #22c55e;
-            --color-suspect: #FEBB97;
-            --color-infected: #ef4444;
-
-            /* Prediction Overlay Colors (Slightly altered) */
-            --predict-healthy: #22c55e;
-            --predict-suspect: #FEBB97;
-            --predict-infected: #ef4444;
+            --green-dark:  #3A5A40;
+            --green-light: #A3B18A;
+            --brown:       #7F5539;
+            --cream:       #EDE0D4;
+            --bg:          #1a2b1c;
+            --bg2:         #142016;
+            --text:        var(--cream);
+            --text-dim:    rgba(237,224,212,0.5);
+            --border:      rgba(237,224,212,0.12);
+            --border-hi:   rgba(255,255,255,0.22);
+            --shadow:      0 30px 70px rgba(0,0,0,0.5);
+            --healthy:     #2ecc71;
+            --stressed:    #f39c12;
+            --critical:    #e74c3c;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: var(--bg-gradient);
-            color: var(--text-light);
+            font-family: 'Tajawal', sans-serif;
+            background: #1e3a22;
+            background-image:
+                radial-gradient(ellipse at 15% 0%,   #3a6b42 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 100%, #4a3020 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%,  #2a4a30 0%, transparent 70%);
+            color: var(--text);
+            direction: rtl;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Top Navigation Bar */
+        /* ══ NAVBAR ══ */
         .navbar {
+            flex-shrink: 0;
+            height: 68px;
+            z-index: 1200;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 15px 20px;
-            background: rgba(4, 44, 37, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border);
-            box-shadow: var(--shadow-soft);
-            z-index: 1000;
+            justify-content: space-between;
+            padding: 0 48px;
+            background: rgba(20,32,22,0.82);
+            backdrop-filter: blur(22px);
+            border-bottom: 1px solid var(--border);
         }
-
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 6px;
-            border-radius: 30px;
+        .nav-brand { display: flex; align-items: center; }
+        .nav-links  { display: flex; gap: 6px; position: relative; }
+        .nav-indicator {
+            position: absolute; bottom: -18px;
+            height: 2.5px; background: #EDE0D4; border-radius: 2px;
+            transition: all 0.38s cubic-bezier(0.4,0,0.2,1);
+            pointer-events: none;
         }
-
-        .nav-tab {
-            padding: 8px 26px;
-            border-radius: 24px;
-            color: var(--text-light);
+        .nav-item {
+            color: var(--text-dim);
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 1.05rem;
+            padding: 8px 22px;
+            font-weight: 600; font-size: 0.95rem;
+            transition: color 0.3s;
+            border-radius: 8px; white-space: nowrap;
+        }
+        .nav-item:hover  { color: #EDE0D4; background: rgba(255,255,255,0.04); }
+        .nav-item.active { color: #EDE0D4; font-weight: 800; }
+
+        /* ══ WORKSPACE ══ */
+        .workspace {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; padding: 16px; gap: 14px;
         }
 
-        .nav-tab.active {
-            background: var(--accent);
-            color: var(--primary-dark);
-            box-shadow: 0 4px 12px rgba(254, 187, 151, 0.4);
+        /* ══ MAP CARD ══ */
+        .map-card {
+            flex: 1; position: relative;
+            border-radius: 22px; overflow: hidden;
+            border: 1px solid var(--border);
+            border-top: 1px solid var(--border-hi);
+            border-right: 1px solid var(--border-hi);
+            background: rgba(255,255,255,0.04);
+            box-shadow: var(--shadow);
+            min-height: 0;
         }
+        #map { width: 100%; height: 100%; }
 
-        .nav-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
+        /* floating overlays */
+        .map-overlay {
+            position: absolute; z-index: 900;
+            background: rgba(20,32,22,0.88);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            border-top: 1px solid var(--border-hi);
+            border-radius: 14px;
+            padding: 10px 16px;
         }
+        .overlay-area { top: 14px; right: 14px; display: flex; flex-direction: column; gap: 2px; }
+        .overlay-area-lbl { font-size: 0.68rem; font-weight: 700; color: var(--text-dim); }
+        .overlay-area-val { font-size: 1rem; font-weight: 800; color: var(--cream); }
 
-        /* Main Workspace */
-        .main-container {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+        .overlay-toggle { top: 14px; left: 14px; display: flex; align-items: center; gap: 10px; }
+        .toggle-lbl { font-size: 0.85rem; font-weight: 700; color: var(--cream); min-width: 88px; }
 
-        /* Map Wrapper */
-        .map-wrapper {
-            position: relative;
-            flex: 1;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: var(--shadow-soft);
-            border: 1px solid var(--card-border);
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            background-color: var(--primary-dark);
-        }
-
-        /* Hovering UI Cards Container Base */
-        .floating-card {
-            position: absolute;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 16px 22px;
-            color: var(--text-light);
-            box-shadow: var(--shadow-soft);
-            z-index: 1000;
-        }
-
-        /* Action Bar Container */
-        .action-bar {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            /* Right aligned in RTL */
-            margin-bottom: 20px;
-        }
-
-        /* Back Button */
-        .back-button {
-            background: var(--accent);
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: 16px;
-            box-shadow: var(--shadow-soft);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-        }
-
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(253, 203, 110, 0.4);
-        }
-
-        /* Top Left Toggle Component */
-        .toggle-container {
-            top: 20px;
-            left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 150px;
-        }
-
-        .toggle-label-text {
-            font-weight: 700;
-            font-size: 1.05rem;
-            transition: color 0.3s ease;
-        }
-
-        .toggle-switch-wrapper {
-            display: flex;
-            align-items: center;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        /* switch */
+        .switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: absolute; inset: 0;
+            background: rgba(237,224,212,0.15);
+            border-radius: 30px; border: 1px solid var(--border);
+            cursor: pointer; transition: .3s;
         }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            right: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        .slider::before {
+            content: ''; position: absolute;
+            width: 18px; height: 18px; right: 3px; top: 3px;
+            background: #EDE0D4; border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: .3s;
         }
+        input:checked + .slider { background: var(--green-dark); border-color: var(--green-light); }
+        input:checked + .slider::before { transform: translateX(-21px); background: var(--green-light); }
 
-        input:checked+.slider {
-            background-color: var(--accent);
-            border-color: var(--accent);
+        /* loading */
+        .map-loading {
+            position: absolute; inset: 0; z-index: 1000;
+            background: rgba(20,32,22,0.72); backdrop-filter: blur(4px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+            opacity: 0; pointer-events: none; transition: opacity .3s;
         }
-
-        input:checked+.slider:before {
-            transform: translateX(-24px);
+        .map-loading.show { opacity: 1; pointer-events: all; }
+        .spin-ring {
+            width: 52px; height: 52px;
+            border: 3px solid rgba(163,177,138,0.2);
+            border-top-color: var(--green-light);
+            border-radius: 50%; animation: spin .9s linear infinite;
         }
-
-        /* Bottom Left Information Card */
-        .area-card {
-            bottom: 20px;
-            left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            text-align: right;
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-txt {
+            font-size: 0.9rem; font-weight: 700; color: var(--cream);
+            animation: pulse 1.4s ease-in-out infinite;
         }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
 
-        .area-label {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 600;
+        /* ══ STATS CARD ══ */
+        .stats-card {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-right: 1px solid rgba(255,255,255,0.2);
+            border-radius: 22px; padding: 0 24px;
+            display: grid;
+            grid-template-columns: 1fr 1px 1fr 1px 1fr 1px 2fr 1px 2.2fr;
+            height: 110px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
+        .sdiv { background: var(--border); margin: 18px 0; }
 
-        .area-value {
-            color: var(--accent);
-            font-size: 1.4rem;
-            font-weight: 700;
+        .scell {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 12px 8px; gap: 4px; position: relative;
         }
-
-        /* Bottom Right Legend Items */
-        .legend-card {
-            bottom: 20px;
-            right: 20px;
-            min-width: 160px;
+        .scell::after {
+            content: ''; position: absolute;
+            top: 0; left: 14px; right: 14px;
+            height: 2.5px; border-radius: 0 0 4px 4px;
         }
+        .scell.s-healthy::after  { background: var(--healthy); }
+        .scell.s-stressed::after { background: var(--stressed); }
+        .scell.s-critical::after { background: var(--critical); }
+        .scell.s-chart::after    { height: 0; }
+        .scell.s-ndvi::after     { background: linear-gradient(90deg, var(--critical), var(--stressed), var(--healthy)); }
 
-        .legend-title {
-            font-weight: 700;
-            margin-bottom: 14px;
-            font-size: 1.1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            padding-bottom: 8px;
+        .snum { font-size: 2rem; font-weight: 900; line-height: 1; }
+        .scell.s-healthy  .snum { color: var(--healthy); }
+        .scell.s-stressed .snum { color: var(--stressed); }
+        .scell.s-critical .snum { color: var(--critical); }
+        .slbl { font-size: 0.72rem; font-weight: 700; color: var(--text-dim); }
+
+        /* chart cell */
+        .scell.s-chart { align-items: flex-start; padding: 14px 18px; gap: 6px; }
+        .chart-head {
+            width: 100%; display: flex; justify-content: space-between;
+            font-size: 0.74rem; font-weight: 700; color: var(--text-dim);
         }
-
-        .legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .chart-pct { color: var(--green-light); font-size: 0.92rem; font-weight: 800; }
+        .prog-track {
+            width: 100%; height: 7px;
+            background: rgba(237,224,212,0.08);
+            border-radius: 8px; overflow: hidden; display: flex; gap: 2px;
         }
+        .prog-seg { height: 100%; border-radius: 6px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+        .seg-h { background: var(--healthy); }
+        .seg-s { background: var(--stressed); }
+        .seg-c { background: var(--critical); }
+        .leg-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1px; }
+        .leg-it  { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--text-dim); }
+        .leg-dot { width: 6px; height: 6px; border-radius: 50%; }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1rem;
-            font-weight: 600;
+        /* ndvi cell */
+        .scell.s-ndvi {
+            flex-direction: row; gap: 11px;
+            align-items: center; justify-content: flex-start; padding: 12px 16px;
         }
-
-        .legend-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
+        .ndvi-ring { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+        .ndvi-ring svg { transform: rotate(-90deg); }
+        .rtrack { fill:none; stroke: rgba(237,224,212,0.08); stroke-width: 5; }
+        .rfill  {
+            fill: none; stroke-width: 5; stroke-linecap: round;
+            stroke-dasharray: 163; stroke-dashoffset: 163;
+            transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke .5s;
         }
-
-        .color-healthy {
-            background: var(--color-healthy);
-            box-shadow: 0 0 10px var(--color-healthy);
+        .rcenter {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
+        .rval  { font-size: 0.92rem; font-weight: 900; color: var(--cream); line-height: 1; }
+        .runit { font-size: 0.5rem; color: var(--text-dim); }
+        .ndvi-desc { display: flex; flex-direction: column; gap: 3px; }
+        .ndvi-status { font-size: 0.84rem; font-weight: 800; }
+        .ndvi-sub    { font-size: 0.7rem; color: var(--text-dim); line-height: 1.4; }
 
-        .color-suspect {
-            background: var(--color-suspect);
-            box-shadow: 0 0 10px var(--color-suspect);
+        /* ══ SKELETON ══ */
+        .skel {
+            background: linear-gradient(90deg,
+                rgba(237,224,212,0.05) 25%,
+                rgba(237,224,212,0.12) 50%,
+                rgba(237,224,212,0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s infinite;
+            border-radius: 6px;
+            color: transparent !important;
+            user-select: none;
         }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        .sk-num  { width: 52px; height: 34px; border-radius: 8px; display: block; }
+        .sk-bar  { width: 100%; height: 7px; border-radius: 8px; display: block; }
+        .sk-line { height: 11px; border-radius: 5px; display: block; }
+        .sk-ring { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; display: block; }
 
-        .color-infected {
-            background: var(--color-infected);
-            box-shadow: 0 0 10px var(--color-infected);
-        }
-
-        /* Leaflet Controls Styling */
+        /* Leaflet */
         .leaflet-control-zoom {
-            margin-top: 20px !important;
-            margin-right: 20px !important;
-            border: none !important;
-            box-shadow: var(--shadow-soft) !important;
-            border-radius: 8px !important;
-            overflow: hidden;
+            margin-top: 60px !important; margin-left: 14px !important;
+            border: none !important; border-radius: 10px !important; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
         }
-
         .leaflet-bar a {
-            background-color: var(--card-bg) !important;
-            color: var(--text-light) !important;
-            border: 1px solid var(--card-border) !important;
-            backdrop-filter: blur(5px);
+            background: rgba(20,32,22,0.92) !important; color: var(--text) !important;
+            border-color: var(--border) !important;
+            width: 32px !important; height: 32px !important; line-height: 32px !important;
         }
-
-        .leaflet-bar a:hover {
-            background-color: var(--primary-light) !important;
-            color: white !important;
-        }
-
+        .leaflet-bar a:hover { color: var(--green-light) !important; }
         .leaflet-control-attribution {
-            background: rgba(0, 0, 0, 0.6) !important;
-            color: #ccc !important;
-            border-radius: 8px 0 0 0;
-            padding: 2px 8px !important;
+            background: rgba(0,0,0,0.5) !important; color: #888 !important;
+            font-size: 0.62rem !important; padding: 2px 7px !important;
         }
+        .leaflet-control-attribution a { color: var(--green-light) !important; }
 
-        .leaflet-control-attribution a {
-            color: var(--accent) !important;
+        @media (max-width: 680px) {
+            .navbar { padding: 0 20px; }
+            .workspace { padding: 10px; gap: 10px; }
+            .stats-card { grid-template-columns: 1fr 1px 1fr 1px 1fr; height: auto; padding: 10px 14px; }
+            .scell.s-chart, .scell.s-ndvi,
+            .sdiv:nth-child(8), .sdiv:nth-child(6) { display: none; }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- Main Top Navigation -->
-    <nav class="navbar">
-        <div class="nav-tabs">
-            <a href="#" class="nav-tab active">الخريطة</a>
-            <a href="#" class="nav-tab">الحالة</a>
-            <a href="#" class="nav-tab">الوقاية والتنبؤ</a>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <img src="/images/logo5.png" alt="عسيب" style="height:120px; width:auto; mix-blend-mode:screen;">
+    </div>
+    <div class="nav-links" id="navLinks">
+        <div class="nav-indicator" id="navIndicator"></div>
+        <a href="/home"     class="nav-item"        data-nav>الرئيسية</a>
+        <a href="/add_farm" class="nav-item"        data-nav>إضافة مزرعة</a>
+        <a href="/map"      class="nav-item active" data-nav>مزارعي</a>
+    </div>
+</nav>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+    <!-- MAP -->
+    <div class="map-card">
+        <div id="map"></div>
+
+        <div class="map-overlay overlay-area">
+            <span class="overlay-area-lbl">مساحة المزرعة</span>
+            <span class="overlay-area-val" id="areaVal">—</span>
         </div>
-    </nav>
 
-    <!-- Map Content Area -->
-    <main class="main-container">
-        <!-- Optional Top Header Padding Space -->
-        <div class="action-bar">
-            <!-- Back Button OUTSIDE Map -->
-            <a href="/home" class="back-button">
-                العودة للرئيسية
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
+        <div class="map-overlay overlay-toggle">
+            <span class="toggle-lbl" id="toggleLbl">الوضع الحالي</span>
+            <label class="switch">
+                <input type="checkbox" id="modeToggle">
+                <span class="slider"></span>
+            </label>
         </div>
 
-        <div class="map-wrapper">
-            <!-- Map Target Division -->
-            <div id="map"></div>
+        <div class="map-loading" id="mapLoading">
+            <div class="spin-ring"></div>
+            <div class="loading-txt" id="loadingTxt">جارٍ تحليل البيانات...</div>
+        </div>
+    </div>
 
-            <!-- Floating UI: Top Left Control Toggle -->
-            <div class="floating-card toggle-container">
-                <div class="toggle-label-text" id="modeLabel">الوضع الحالي</div>
-                <div class="toggle-switch-wrapper">
-                    <label class="switch">
-                        <input type="checkbox" id="modeToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+    <!-- STATS -->
+    <div class="stats-card">
+
+        <div class="scell s-healthy">
+            <span class="skel sk-num" id="numHealthy"></span>
+            <span class="slbl">سليم</span>
+        </div>
+        <div class="sdiv"></div>
+
+        <div class="scell s-stressed">
+            <span class="skel sk-num" id="numStressed"></span>
+            <span class="slbl">تحت ضغط</span>
+        </div>
+        <div class="sdiv"></div>
+
+        <div class="scell s-critical">
+            <span class="skel sk-num" id="numCritical"></span>
+            <span class="slbl">حرج</span>
+        </div>
+        <div class="sdiv"></div>
+
+        <div class="scell s-chart">
+            <div class="chart-head">
+                <span>توزيع الصحة</span>
+                <span class="chart-pct" id="healthPct">—%</span>
             </div>
-
-            <!-- Floating UI: Bottom Left Area Information -->
-            <div class="floating-card area-card">
-                <span class="area-label">المساحة</span>
-                <span class="area-value" id="farmAreaValue">--</span>
+            <div class="prog-track" id="progTrack">
+                <div class="skel sk-bar" style="width:100%"></div>
             </div>
-
-            <!-- Floating UI: Bottom Right Status Legend -->
-            <div class="floating-card legend-card">
-                <div class="legend-title">مؤشر الحالة</div>
-                <div class="legend-items">
-                    <div class="legend-item">
-                        <div class="legend-color color-healthy" id="leg-healthy"></div>
-                        <span>سليم</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color color-suspect" id="leg-suspect"></div>
-                        <span>مشتبه به</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color color-infected" id="leg-infected"></div>
-                        <span>مصاب</span>
-                    </div>
-                </div>
+            <div class="leg-row">
+                <div class="leg-it"><div class="leg-dot" style="background:var(--healthy)"></div>سليم</div>
+                <div class="leg-it"><div class="leg-dot" style="background:var(--stressed)"></div>ضغط</div>
+                <div class="leg-it"><div class="leg-dot" style="background:var(--critical)"></div>حرج</div>
             </div>
         </div>
-    </main>
+        <div class="sdiv"></div>
 
-    <!-- Leaflet JS Library -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
+        <div class="scell s-ndvi">
+            <span class="skel sk-ring" id="ndviRingEl"></span>
+            <div class="ndvi-desc">
+                <span class="ndvi-status skel sk-line" id="ndviStatus" style="width:88px"></span>
+                <span class="ndvi-sub    skel sk-line" id="ndviSub"    style="width:108px; margin-top:4px"></span>
+            </div>
+        </div>
 
-        // System Config Palette
-        const mapColors = {
-            current: {
-                healthy: getComputedStyle(document.documentElement).getPropertyValue('--color-healthy').trim(),
-                suspect: getComputedStyle(document.documentElement).getPropertyValue('--color-suspect').trim(),
-                infected: getComputedStyle(document.documentElement).getPropertyValue('--color-infected').trim()
-            },
-            predict: {
-                healthy: getComputedStyle(document.documentElement).getPropertyValue('--predict-healthy').trim(),
-                suspect: getComputedStyle(document.documentElement).getPropertyValue('--predict-suspect').trim(),
-                infected: getComputedStyle(document.documentElement).getPropertyValue('--predict-infected').trim()
-            }
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+
+/* ══ NAV INDICATOR ══ */
+const navLinks  = document.querySelectorAll('[data-nav]');
+const indicator = document.getElementById('navIndicator');
+const navWrap   = document.getElementById('navLinks');
+
+function moveIndicator(el) {
+    const wr = navWrap.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    indicator.style.width = er.width + 'px';
+    indicator.style.right = (wr.right - er.right) + 'px';
+    indicator.style.left  = 'auto';
+}
+const activeLink = document.querySelector('.nav-item.active');
+if (activeLink) setTimeout(() => moveIndicator(activeLink), 50);
+navLinks.forEach(link => {
+    link.addEventListener('mouseenter', () => moveIndicator(link));
+    link.addEventListener('click', function() {
+        navLinks.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        moveIndicator(this);
+    });
+});
+navWrap.addEventListener('mouseleave', () => {
+    const a = document.querySelector('.nav-item.active');
+    if (a) moveIndicator(a);
+});
+
+/* ══ MAP ══ */
+const map = L.map('map', { zoomControl: false }).setView([25.3833, 49.5833], 17);
+L.control.zoom({ position: 'bottomleft' }).addTo(map);
+L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri', maxZoom: 19 }
+).addTo(map);
+
+let layerCur  = L.layerGroup().addTo(map);
+let layerFore = L.layerGroup();
+let polygon   = null;
+
+// ✅ cache البيانات — ما نطلب API مرتين لنفس الوضع
+let cachedCur  = null;   // بيانات الوضع الحالي
+let cachedFore = null;   // بيانات التنبؤ
+
+/* ══ FARM ══ */
+const farm = (() => {
+    try { return JSON.parse(localStorage.getItem('selectedFarm')); }
+    catch { return null; }
+})();
+
+if (farm) {
+    // عرض المساحة
+    if (farm.farmArea)
+        document.getElementById('areaVal').textContent =
+            Number(farm.farmArea).toLocaleString('ar-SA') + ' م²';
+
+    // رسم حدود المزرعة لو في إحداثيات
+    if (farm.polygonCoordinates?.length) {
+        const ll = farm.polygonCoordinates.map(c => [c.lat, c.lng]);
+
+        // fill داخلي شفاف
+        L.polygon(ll, {
+            color: 'transparent',
+            weight: 0,
+            fillColor: '#A3B18A',
+            fillOpacity: 0.07
+        }).addTo(map);
+
+        // الحدود الرئيسية — بوردر واضح ومضيء
+        polygon = L.polygon(ll, {
+            color: '#FDCB6E',
+            weight: 3,
+            fillColor: 'transparent',
+            fillOpacity: 0,
+            opacity: 1,
+            dashArray: null,
+            lineJoin: 'round'
+        }).addTo(map);
+
+        // توهج خارجي ذهبي
+        L.polygon(ll, {
+            color: '#FDCB6E',
+            weight: 14,
+            fillColor: 'transparent',
+            fillOpacity: 0,
+            opacity: 0.18
+        }).addTo(map);
+
+        map.fitBounds(polygon.getBounds());
+    }
+}
+
+// ✅ نحمّل البيانات دائماً — سواء في farm أو لا
+// لو ما في farm → demoPoints يستخدم إحداثيات افتراضية
+loadData('current');
+
+/* ══ HELPERS ══ */
+const colorOf = s =>
+    s === 'healthy'  ? '#2ecc71' :
+    s === 'stressed' ? '#f39c12' : '#e74c3c';
+
+function inPoly(pt, poly) {
+    const [x, y] = [pt.lng, pt.lat];
+    const vs = poly.getLatLngs()[0];
+    let inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        const [xi,yi,xj,yj] = [vs[i].lng, vs[i].lat, vs[j].lng, vs[j].lat];
+        if (((yi > y) !== (yj > y)) && (x < (xj-xi)*(y-yi)/(yj-yi)+xi))
+            inside = !inside;
+    }
+    return inside;
+}
+
+function showLoading(txt) {
+    document.getElementById('loadingTxt').textContent = txt;
+    document.getElementById('mapLoading').classList.add('show');
+}
+function hideLoading() {
+    document.getElementById('mapLoading').classList.remove('show');
+}
+
+/* ══ RENDER POINTS ══ */
+function renderPoints(layer, points) {
+    layer.clearLayers();
+    points.forEach(p => {
+        const col = colorOf(p.status);
+        L.circleMarker([p.lat, p.lng], {
+            radius: 10,
+            color: col,
+            weight: 0,
+            fillColor: col,
+            fillOpacity: 0.45
+        })
+        .bindTooltip(
+            `<b>NDVI:</b> ${(p.ndvi||0).toFixed(3)}<br><b>الحالة:</b> ${
+                p.status === 'healthy'  ? '🟢 سليم' :
+                p.status === 'stressed' ? '🟡 تحت ضغط' : '🔴 حرج'
+            }`,
+            { direction: 'top' }
+        )
+        .addTo(layer);
+    });
+}
+
+/* ══ UPDATE STATS — يتحدث لما يتغير الوضع ══ */
+function updateStats(points) {
+    const h = points.filter(p => p.status === 'healthy').length;
+    const s = points.filter(p => p.status === 'stressed').length;
+    const c = points.filter(p => p.status === 'critical').length;
+    const n = points.length || 1;
+
+    // أرقام
+    const setNum = (id, val) => {
+        const el = document.getElementById(id);
+        el.className = 'snum';
+        el.textContent = val;
+    };
+    setNum('numHealthy', h);
+    setNum('numStressed', s);
+    setNum('numCritical', c);
+
+    // progress bar
+    const hp = (h/n*100).toFixed(1);
+    const sp = (s/n*100).toFixed(1);
+    const cp = (c/n*100).toFixed(1);
+    document.getElementById('progTrack').innerHTML = `
+        <div class="prog-seg seg-h" style="width:${hp}%"></div>
+        <div class="prog-seg seg-s" style="width:${sp}%"></div>
+        <div class="prog-seg seg-c" style="width:${cp}%"></div>`;
+    document.getElementById('healthPct').textContent = hp + '%';
+
+    // NDVI متوسط حقيقي من البيانات
+    const avg    = points.reduce((a, p) => a + (p.ndvi || 0), 0) / n;
+    const avgStr = avg.toFixed(3);
+    const pct    = Math.min(1, Math.max(0, avg));
+    const offset = (163 * (1 - pct)).toFixed(1);
+    const rColor =
+        avg > 0.55 ? '#2ecc71' :
+        avg > 0.35 ? '#f39c12' : '#e74c3c';
+
+    // ring SVG
+    document.getElementById('ndviRingEl').outerHTML = `
+        <div class="ndvi-ring" id="ndviRingEl">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle class="rtrack" cx="30" cy="30" r="26"/>
+                <circle class="rfill"  cx="30" cy="30" r="26"
+                    style="stroke:${rColor}; stroke-dashoffset:${offset}"/>
+            </svg>
+            <div class="rcenter">
+                <span class="rval">${avgStr}</span>
+                <span class="runit">NDVI</span>
+            </div>
+        </div>`;
+
+    const statusTxt =
+        avg > 0.55 ? 'حالة ممتازة 🌿' :
+        avg > 0.35 ? 'تحت المراقبة ⚠️' : 'تدخل عاجل 🚨';
+    const subTxt =
+        avg > 0.55 ? 'غالبية النخيل بصحة جيدة' :
+        avg > 0.35 ? 'بعض النخيل يحتاج اهتماماً' : 'تحقق من المناطق الحمراء';
+
+    const stEl = document.getElementById('ndviStatus');
+    const sbEl = document.getElementById('ndviSub');
+    stEl.className = 'ndvi-status'; stEl.textContent = statusTxt;
+    stEl.style.color = rColor;      stEl.style.width  = '';
+    sbEl.className = 'ndvi-sub';    sbEl.textContent  = subTxt;
+    sbEl.style.width = '';
+}
+
+/* ══ FETCH من الباكند ══ */
+async function fetchFromAPI(view) {
+    const res = await fetch('/api/analyze', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            polygonCoordinates: farm.polygonCoordinates,
+            view   // 'current' أو 'forecast'
+        })
+    });
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    return data.points;  // [{ lat, lng, ndvi, status }, ...]
+}
+
+/* demo fallback لو ما في Earth Engine
+   الحالي: معظم النقاط سليمة (NDVI عالي)
+   التنبؤ: تراجع ملحوظ — يظهر فرق واضح للمستخدم
+*/
+function demoPoints(view) {
+    const coords = farm?.polygonCoordinates || [{ lat: 25.3833, lng: 49.5833 }];
+    const centerLat = coords.reduce((s, c) => s + c.lat, 0) / coords.length;
+    const centerLng = coords.reduce((s, c) => s + c.lng, 0) / coords.length;
+
+    // نحسب نطاق المزرعة الفعلي عشان النقاط تكون داخلها
+    const lats = coords.map(c => c.lat);
+    const lngs = coords.map(c => c.lng);
+    const latRange = (Math.max(...lats) - Math.min(...lats)) || 0.002;
+    const lngRange = (Math.max(...lngs) - Math.min(...lngs)) || 0.002;
+
+    return Array.from({ length: 150 }, () => {
+        // نقاط موزعة داخل حدود المزرعة الفعلية
+        const lat = centerLat + (Math.random() - 0.5) * latRange * 0.9;
+        const lng = centerLng + (Math.random() - 0.5) * lngRange * 0.9;
+
+        let ndvi;
+        if (view === 'current') {
+            // الحالي: 70% سليم، 20% ضغط، 10% حرج
+            const r = Math.random();
+            if (r < 0.70)      ndvi = 0.56 + Math.random() * 0.35;  // healthy
+            else if (r < 0.90) ndvi = 0.36 + Math.random() * 0.19;  // stressed
+            else               ndvi = 0.05 + Math.random() * 0.30;  // critical
+        } else {
+            // التنبؤ: تراجع — 35% سليم، 35% ضغط، 30% حرج
+            const r = Math.random();
+            if (r < 0.35)      ndvi = 0.56 + Math.random() * 0.25;  // healthy
+            else if (r < 0.70) ndvi = 0.36 + Math.random() * 0.19;  // stressed
+            else               ndvi = 0.05 + Math.random() * 0.30;  // critical
+        }
+
+        return {
+            lat, lng, ndvi,
+            status: ndvi > 0.55 ? 'healthy' : ndvi > 0.35 ? 'stressed' : 'critical'
         };
+    });
+}
 
-        // Initialize Map
-        const map = L.map('map', {
-            zoomControl: false,
-            attributionControl: true
-        }).setView([25.3833, 49.5833], 18);
+/* ══ LOAD DATA — مع كاش ══ */
+async function loadData(view) {
+    const isForecast = view === 'forecast';
+    const layer      = isForecast ? layerFore : layerCur;
 
-        // Zoom control
-        L.control.zoom({ position: 'topright' }).addTo(map);
+    // ✅ لو البيانات محملة مسبقاً → عرضها مباشرة بدون API
+    const cached = isForecast ? cachedFore : cachedCur;
+    if (cached) {
+        renderPoints(layer, cached);
+        updateStats(cached);
+        return;
+    }
 
-        // Satellite tiles
-        L.tileLayer(
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            {
-                attribution: 'Tiles © Esri',
-                maxZoom: 19
-            }).addTo(map);
+    // أول مرة → نطلب من الـ API
+    showLoading(isForecast ? 'جارٍ حساب التنبؤات...' : 'جارٍ تحليل البيانات...');
+    try {
+        const pts = await fetchFromAPI(view);
+        if (isForecast) cachedFore = pts;
+        else            cachedCur  = pts;
+        renderPoints(layer, pts);
+        updateStats(pts);
+    } catch (err) {
+        console.warn('الباكند غير متاح، بيانات تجريبية:', err.message);
+        const pts = demoPoints(view);
+        if (isForecast) cachedFore = pts;
+        else            cachedCur  = pts;
+        renderPoints(layer, pts);
+        updateStats(pts);
+    } finally {
+        hideLoading();
+    }
+}
 
-        // Layers
-        let currentLayer = L.layerGroup().addTo(map);
-        let forecastLayer = L.layerGroup();
+/* ══ TOGGLE ══ */
+document.getElementById('modeToggle').addEventListener('change', async e => {
+    const isForecast = e.target.checked;
+    document.getElementById('toggleLbl').textContent =
+        isForecast ? 'وضع التنبؤ' : 'الوضع الحالي';
 
-        // Global polygon
-        let polygon = null;
+    if (isForecast) {
+        // أخفي layer الحالي
+        map.removeLayer(layerCur);
+        map.addLayer(layerFore);
+        // حمّل التنبؤ (من كاش لو موجود)
+        await loadData('forecast');
+    } else {
+        // ارجع للحالي — البيانات محملة بالفعل في الكاش
+        map.removeLayer(layerFore);
+        map.addLayer(layerCur);
+        // ✅ حدّث الـ stats بأرقام الحالي مو التنبؤ
+        updateStats(cachedCur);
+    }
+});
 
-        // Get farm
-        const selectedFarm = JSON.parse(localStorage.getItem("selectedFarm"));
-
-        // Update area
-        if (selectedFarm && selectedFarm.farmArea) {
-            const areaElement = document.getElementById("farmAreaValue");
-            areaElement.innerText =
-                Number(selectedFarm.farmArea).toLocaleString() + " م²";
-        }
-
-        // Draw polygon
-        if (selectedFarm && selectedFarm.polygonCoordinates) {
-
-            const latlngs = selectedFarm.polygonCoordinates.map(coord => [
-                coord.lat,
-                coord.lng
-            ]);
-
-            polygon = L.polygon(latlngs, {
-                color: "#FDCB6E",
-                fillColor: "#FDCB6E",
-                fillOpacity: 0.2
-            }).addTo(map);
-
-            map.fitBounds(polygon.getBounds());
-
-            loadCurrentLayer();
-        }
-
-        // Point in polygon
-        function isPointInPolygon(point, polygon) {
-
-            const x = point.lng;
-            const y = point.lat;
-
-            const vs = polygon.getLatLngs()[0];
-
-            let inside = false;
-
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-
-                const xi = vs[i].lng, yi = vs[i].lat;
-                const xj = vs[j].lng, yj = vs[j].lat;
-
-                const intersect = ((yi > y) !== (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-
-                if (intersect) inside = !inside;
-            }
-
-            return inside;
-        }
-
-        // Fetch NDVI
-        async function fetchNDVI(view) {
-
-            const payload = {
-                polygonCoordinates: selectedFarm.polygonCoordinates,
-                view: view
-            };
-
-            const res = await fetch(
-                "/api/analyze",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                }
-            );
-
-            const data = await res.json();
-            return data.points;
-        }
-
-        // NDVI color
-        function colorFromNDVI(ndvi) {
-
-            if (ndvi > 0.6) return "#22c55e";
-            if (ndvi > 0.4) return "#FDCB6E";
-            return "#ef4444";
-        }
-
-        function colorFromStatus(status) {
-
-            if (status === "healthy") return "#22c55e";
-            if (status === "stressed") return "#FDCB6E";
-            return "#ef4444";
-
-        }
-        // Render points
-        function renderPoints(layer, points) {
-
-            layer.clearLayers();
-
-            points.forEach(p => {
-
-                const point = L.latLng(p.lat, p.lng);
-
-                if (isPointInPolygon(point, polygon)) {
-
-                    const color = colorFromStatus(p.status);
-
-                    L.circleMarker(point, {
-                        radius: 2,
-                        color: color,
-                        fillColor: color,
-                        fillOpacity: 0.5,
-                        weight: 0
-                    }).addTo(layer);
-
-                }
-
-            });
-        }
-
-        // Load current
-        async function loadCurrentLayer() {
-
-            const points = await fetchNDVI("current");
-            renderPoints(currentLayer, points);
-
-        }
-
-        // Load forecast
-        async function loadForecastLayer() {
-
-            const points = await fetchNDVI("forecast");
-            renderPoints(forecastLayer, points);
-
-        }
-
-        // Toggle
-        const modeToggle = document.getElementById('modeToggle');
-        const modeLabel = document.getElementById('modeLabel');
-
-        modeToggle.addEventListener('change', async (e) => {
-
-            const predict = e.target.checked;
-
-            if (predict) {
-
-                modeLabel.innerText = 'وضع التنبؤ';
-
-                await loadForecastLayer();
-
-                map.removeLayer(currentLayer);
-                map.addLayer(forecastLayer);
-
-            }
-            else {
-
-                modeLabel.innerText = 'الوضع الحالي';
-
-                map.removeLayer(forecastLayer);
-                map.addLayer(currentLayer);
-
-            }
-
-        });
-
-    </script>
+</script>
 </body>
-
 </html>
