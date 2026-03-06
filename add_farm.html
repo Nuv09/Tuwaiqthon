@@ -409,8 +409,8 @@
     <header class="main-navbar">
         <div class="nav-brand">سعف ويب</div>
         <nav class="nav-links">
-            <a href="/" class="nav-item">الرئيسية</a>
-            <a href="/" class="nav-item active">إضافة مزرعة</a>
+            <a href="/home"class="nav-item">الرئيسية</a>
+            <a href="/add_farm" class="nav-item active">إضافة مزرعة</a>
         </nav>
     </header>
 
@@ -626,7 +626,7 @@ localStorage.setItem("farms", JSON.stringify(farms));
 
 alert("تم إضافة المزرعة بنجاح!");
 
-window.location.href = "/";
+window.location.href="/home";
         }
     </script>
 </body>
