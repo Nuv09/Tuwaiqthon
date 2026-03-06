@@ -106,12 +106,18 @@ def get_ndvi_points(polygon_coords, view):
     else:
         ndvi = get_current_ndvi(region)
 
+    # scale يتكيف حسب حجم المزرعة — يغطي كامل المزرعة بشبكة منتظمة
+    area = region.area().getInfo()
+    scale = 10 if area < 50000 else 20
+
     samples = (
-        ndvi.sample(
+        ndvi
+        .clipToCollection(ee.FeatureCollection([ee.Feature(region)]))
+        .sample(
             region=region,
-            scale=10,
-            numPixels=450,
-            geometries=True
+            scale=scale,
+            geometries=True,
+            seed=42
         )
         .getInfo()
     )
@@ -121,7 +127,10 @@ def get_ndvi_points(polygon_coords, view):
     for f in samples["features"]:
 
         coords = f["geometry"]["coordinates"]
-        value = f["properties"]["NDVI"]
+        value  = f["properties"].get("NDVI")
+
+        if value is None:
+            continue
 
         if value > 0.55:
             status = "healthy"
@@ -131,14 +140,13 @@ def get_ndvi_points(polygon_coords, view):
             status = "critical"
 
         points.append({
-            "lat": coords[1],
-            "lng": coords[0],
-            "ndvi": value,
+            "lat":    coords[1],
+            "lng":    coords[0],
+            "ndvi":   round(value, 4),
             "status": status
         })
 
     return points
-
 
 @app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
