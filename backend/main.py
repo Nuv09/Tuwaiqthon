@@ -25,6 +25,11 @@ def read_map():
 def read_add_farm():
     return FileResponse(os.path.join(BASE_DIR, "add_farm.html"))
 
+@app.get("/Home_page")
+def read_add_farm():
+    return FileResponse(os.path.join(BASE_DIR, "Home_page.html"))
+
+
 try:
     ee.Initialize()
 except Exception:
