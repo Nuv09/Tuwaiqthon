@@ -553,9 +553,8 @@
     </div>
     <div class="nav-links" id="navLinks">
         <div class="nav-indicator" id="navIndicator"></div>
-        <a href="Home_page.html" class="nav-item" data-nav>الرئيسية</a>
+        <a href="Home_page.html" class="nav-item" data-nav>مزارعي</a>
         <a href="add_farm.html" class="nav-item active" data-nav>إضافة مزرعة</a>
-        <a href="map.html" class="nav-item" data-nav>مزارعي</a>
     </div>
 </nav>
 
@@ -827,12 +826,39 @@
             farmArea,
             region,
             notes:       document.getElementById('notes').value,
-            polygonCoordinates: currentPolygonCoordinates
+            polygonCoordinates: currentPolygonCoordinates,
+            dateAdded: new Date().toLocaleDateString('ar-SA')
         };
-        let farms = JSON.parse(localStorage.getItem("farms")) || [];
-        farms.push(formData);
-        localStorage.setItem("farms", JSON.stringify(farms));
-        document.getElementById('successModal').classList.add('show');
+const submitBtn = document.querySelector('.btn-submit');
+submitBtn.disabled = true;
+submitBtn.textContent = 'جاري التحليل...';
+
+fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ polygonCoordinates: currentPolygonCoordinates })
+})
+.then(res => res.json())
+.then(data => {
+    const points = data.points || [];
+    const total = points.length;
+    if (total > 0) {
+        formData.healthScore   = Math.round((points.filter(p => p.status === 'healthy').length  / total) * 100);
+        formData.stressScore   = Math.round((points.filter(p => p.status === 'stressed').length / total) * 100);
+        formData.criticalScore = Math.round((points.filter(p => p.status === 'critical').length / total) * 100);
+    }
+})
+.catch(() => {
+    formData.healthScore = null;
+})
+.finally(() => {
+    let farms = JSON.parse(localStorage.getItem("farms")) || [];
+    farms.push(formData);
+    localStorage.setItem("farms", JSON.stringify(farms));
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'إضافة المزرعة';
+    document.getElementById('successModal').classList.add('show');
+});
     }
 
     function goHome() {
