@@ -9,7 +9,9 @@ import os
 
 app = FastAPI()
 
-app.mount("/images", StaticFiles(directory="../images"), name="images")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+app.mount("/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), name="images")
 
 @app.get("/")
 def read_index():
