@@ -353,7 +353,7 @@
         <!-- Optional Top Header Padding Space -->
         <div class="action-bar">
             <!-- Back Button OUTSIDE Map -->
-            <a href="/home" class="back-button">
+            <a href="/home" class="back-button" onclick="sessionStorage.setItem('reloadHome','1')">
                 العودة لمزارعي
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
@@ -564,6 +564,43 @@
             const points = await fetchNDVI("current");
             renderPoints(currentLayer, points);
 
+            // حساب نسب الحالات
+            let healthy = 0;
+            let stressed = 0;
+            let critical = 0;
+
+            points.forEach(p => {
+                if (p.status === "healthy") healthy++;
+                else if (p.status === "stressed") stressed++;
+                else critical++;
+            });
+
+            const total = healthy + stressed + critical;
+
+            const healthScore = Math.round((healthy / total) * 100);
+            const stressScore = Math.round((stressed / total) * 100);
+            const criticalScore = Math.round((critical / total) * 100);
+
+            // تحديث بيانات المزرعة
+            const farm = JSON.parse(localStorage.getItem("selectedFarm"));
+
+            farm.healthScore = healthScore;
+            farm.stressScore = stressScore;
+            farm.criticalScore = criticalScore;
+
+            localStorage.setItem("selectedFarm", JSON.stringify(farm));
+
+            // تحديث المزرعة داخل قائمة المزارع
+            let farms = JSON.parse(localStorage.getItem("farms")) || [];
+
+            farms = farms.map(f => {
+                if (f.farmName === farm.farmName) {
+                    return farm;
+                }
+                return f;
+            });
+
+            localStorage.setItem("farms", JSON.stringify(farms));
         }
 
         // Load forecast

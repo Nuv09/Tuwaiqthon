@@ -48,7 +48,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 68px;
+            height: 120px;
             z-index: 999;
             display: flex;
             align-items: center;
@@ -488,17 +488,24 @@
             }
         }
 
-        .home-btn{
-background:#A3B18A;
-color:#1e3a22;
-padding:6px 16px;
-border-radius:8px;
-text-decoration:none;
-font-weight:700;
-}
-.home-btn:hover{
-background:#EDE0D4;
-}
+        .home-btn {
+            background: #A3B18A;
+            color: #1e3a22;
+            padding: 6px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .home-btn:hover {
+            background: #EDE0D4;
+        }
+
+        .nav-brand img {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 
@@ -507,7 +514,7 @@ background:#EDE0D4;
     <!-- Main Global Navigation Bar -->
     <header class="main-navbar">
         <div class="nav-brand">
-            <img src="/images/AseebLogo.png" alt="عسيب" style="height: 120px; width:auto; mix-blend-mode:screen;">
+            <img src="/images/AseebLogo.png" alt="عسيب" style="height: 90px; width:auto; mix-blend-mode:screen;">
         </div>
         <div class="nav-links" id="navLinks">
             <div class="nav-indicator" id="navIndicator"></div>
@@ -696,6 +703,11 @@ background:#EDE0D4;
             farms.splice(deleteIndex, 1);
             localStorage.setItem("farms", JSON.stringify(farms));
             closeDeleteModal();
+            location.reload();
+        }
+
+        if (sessionStorage.getItem("reloadHome")) {
+            sessionStorage.removeItem("reloadHome");
             location.reload();
         }
     </script>
