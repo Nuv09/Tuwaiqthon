@@ -4,390 +4,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAAF - مزارعي</title>
-    <!-- Google Fonts for Typography -->
+    <title>عسيب - مزارعي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
         :root {
-            /* Theme Colors */
-            --primary-bg: #042C25;
-            --primary-light: #064036;
-            --accent: #FDCB6E;
-            --text-light: #FFF6E0;
-            --card-light-bg: #FFF6E0;
-
-            /* UI Elements */
-            --glass-bg: rgba(4, 44, 37, 0.65);
-            --glass-border: rgba(253, 203, 110, 0.25);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --input-bg: rgba(255, 246, 224, 0.08);
+            --green-dark: #3A5A40;
+            --green-light: #A3B18A;
+            --brown: #7F5539;
+            --cream: #EDE0D4;
+            --border: rgba(237, 224, 212, 0.12);
+            --border-hi: rgba(255, 255, 255, 0.22);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        * {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
-            background: url('images/palm2.png') no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text-light);
+            font-family: 'Tajawal', sans-serif;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
+            background: #1e3a22;
+            background-image:
+                radial-gradient(ellipse at 15% 0%, #3a6b42 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 100%, #4a3020 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, #2a4a30 0%, transparent 70%);
+            color: var(--cream);
             direction: rtl;
-            padding-top: 100px;
+            padding-top: 90px;
         }
 
-        /* Abstract Background Elements */
-        .bg-overlay {
+        /* ══ NAVBAR ══ */
+        .main-navbar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(4, 44, 37, 0.75);
-            z-index: -2;
-        }
-
-        .deco-circle {
-            position: fixed;
-            border-radius: 50%;
-            background-color: rgba(253, 203, 110, 0.15);
-            z-index: -1;
-            filter: blur(40px);
-        }
-
-        .deco-circle-1 {
-            width: 600px;
-            height: 600px;
-            bottom: -200px;
-            left: -150px;
-        }
-
-        .deco-circle-2 {
-            width: 400px;
-            height: 400px;
-            top: -100px;
-            right: -100px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            padding: 40px 20px;
+            right: 0;
+            height: 120px;
+            z-index: 999;
             display: flex;
-            flex-direction: column;
-            gap: 25px;
-            z-index: 10;
-            /* Ensure content is above background layers */
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            background: rgba(20, 32, 22, 0.82);
+            backdrop-filter: blur(22px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
             position: relative;
         }
 
-        /* Top Header Section */
+        .nav-indicator {
+            position: absolute;
+            bottom: -18px;
+            height: 2.5px;
+            background: #EDE0D4;
+            border-radius: 2px;
+            transition: all 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .nav-item {
+            color: rgba(237, 224, 212, 0.5);
+            text-decoration: none;
+            padding: 8px 22px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            color: #EDE0D4;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-item.active {
+            color: #EDE0D4;
+            font-weight: 800;
+        }
+
+        /* ══ PAGE ══ */
+        .container {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        /* ══ HEADER ══ */
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 5px;
+            align-items: center;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            color: var(--text-light);
-            font-weight: 700;
-            line-height: 1.1;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--cream);
         }
 
         .badge {
-            background-color: var(--accent);
-            color: var(--primary-bg);
-            padding: 6px 16px;
-            border-radius: 20px;
+            background: rgba(163, 177, 138, 0.15);
+            border: 1px solid rgba(163, 177, 138, 0.35);
+            color: var(--green-light);
+            padding: 6px 18px;
+            border-radius: 30px;
             font-weight: 700;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+            font-size: 0.9rem;
         }
 
-        /* Search Bar */
+        /* ══ SEARCH ══ */
         .search-container {
             position: relative;
             width: 100%;
-            margin-bottom: 20px;
         }
 
         .search-container i {
             position: absolute;
-            right: 20px;
+            right: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--accent);
-            font-size: 1.2rem;
-            opacity: 0.9;
+            color: var(--green-light);
+            font-size: 1rem;
+            pointer-events: none;
         }
 
         .search-input {
             width: 100%;
-            padding: 18px 55px 18px 20px;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            background: var(--input-bg);
-            color: var(--text-light);
-            font-family: 'Cairo', sans-serif;
-            font-size: 1.05rem;
+            padding: 14px 48px 14px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--cream);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.95rem;
             outline: none;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            box-shadow: var(--glass-shadow);
+            transition: all 0.3s;
         }
 
         .search-input::placeholder {
-            color: rgba(255, 246, 224, 0.6);
+            color: rgba(237, 224, 212, 0.35);
         }
 
         .search-input:focus {
-            border-color: var(--accent);
-            background: rgba(255, 246, 224, 0.12);
-            box-shadow: 0 0 15px rgba(253, 203, 110, 0.2);
+            border-color: var(--green-light);
+            background: rgba(163, 177, 138, 0.08);
+            box-shadow: 0 0 0 3px rgba(163, 177, 138, 0.1);
         }
 
-        /* Farms List Container */
+        /* ══ FARM CARDS ══ */
         .farms-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
-        /* Farm Card Style */
         .farm-card {
             display: flex;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: var(--glass-shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
             cursor: pointer;
             height: 120px;
             text-decoration: none;
             color: inherit;
+            border: 1px solid var(--border);
+            border-top: 1px solid var(--border-hi);
+            position: relative;
         }
 
         .farm-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-color: rgba(163, 177, 138, 0.5);
         }
 
-        /* Right Side: Deep Green Information */
         .card-info {
             flex: 1;
-            background: rgba(6, 64, 54, 0.85);
-            /* Slightly lighter border match */
-            backdrop-filter: blur(10px);
-            padding: 24px;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 22px 24px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            border: 1px solid var(--glass-border);
-            border-left: none;
-            /* No border where colors meet */
-            border-radius: 0 20px 20px 0;
-            gap: 10px;
+            gap: 8px;
         }
 
         .farm-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-light);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--cream);
         }
 
-        .farm-location {
-            font-size: 1rem;
-            color: var(--accent);
+        .farm-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.82rem;
+            color: var(--green-light);
+        }
+
+        .farm-meta span {
             display: flex;
             align-items: center;
-            gap: 8px;
-            opacity: 0.9;
+            gap: 5px;
         }
 
-        /* Left Side: Beige Indicator */
-        .card-stats {
-            width: 140px;
-            background: var(--card-light-bg);
-            color: var(--primary-bg);
+        .btn-delete {
+            background: rgba(231, 76, 60, 0.12);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin: auto 16px;
+        }
+
+        .btn-delete:hover {
+            background: rgba(231, 76, 60, 0.25);
+            transform: scale(1.1);
+        }
+
+        /* ══ DELETE MODAL ══ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-top: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 28px;
+            padding: 44px 50px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.85) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 18px;
+        }
+
+        .modal h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #EDE0D4;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            color: rgba(237, 224, 212, 0.65);
+            font-size: 0.92rem;
+            margin-bottom: 28px;
+            line-height: 1.7;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .modal-btn.danger {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn.danger::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(30deg);
+            transition: all 0.6s;
+            opacity: 0.5;
+        }
+
+        .modal-btn.danger:hover::after {
+            left: 130%;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #EDE0D4;
+            border: 1px solid rgba(237, 224, 212, 0.2);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-stats {
+            width: 130px;
+            background: rgba(237, 224, 212, 0.06);
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            border-radius: 20px 0 0 20px;
-            position: relative;
+            gap: 6px;
+            border-right: 1px solid var(--border);
+            transition: background 0.3s;
         }
 
-        /* Circular Progress Indicator */
+        .farm-card:hover .card-stats {
+            background: rgba(163, 177, 138, 0.1);
+        }
+
+        .stats-label {
+            font-size: 0.68rem;
+            color: var(--green-light);
+            font-weight: 600;
+            opacity: 0.8;
+        }
+
+        /* ══ PROGRESS CIRCLE ══ */
         .progress-circle {
             position: relative;
-            width: 80px;
-            height: 80px;
+            width: 76px;
+            height: 76px;
             border-radius: 50%;
-            /* --color will be dynamically assigned via JS */
-            background: conic-gradient(var(--color, var(--primary-bg)) var(--progress), #e2dfd5 var(--progress));
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: background 0.5s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: all 0.25s;
         }
 
         .progress-circle::before {
             content: '';
             position: absolute;
-            width: 64px;
-            height: 64px;
-            background-color: var(--card-light-bg);
+            width: 60px;
+            height: 60px;
+            background: #1e3a22;
             border-radius: 50%;
         }
 
         .progress-value {
             position: relative;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--color, var(--primary-bg));
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color, var(--green-light));
             z-index: 1;
-            transition: color 0.5s ease;
         }
 
-        /* Mobile Responsive Resizing */
+        /* ══ PAGE HEADER ══ */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--cream);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .h1-accent {
+            color: var(--green-light);
+            position: relative;
+        }
+
+        .h1-accent::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--green-dark), var(--green-light));
+            border-radius: 2px;
+        }
+
         @media (max-width: 600px) {
+            .main-navbar {
+                padding: 0 20px;
+            }
+
             .farm-card {
-                height: 110px;
-            }
-
-            .card-info {
-                padding: 16px;
-            }
-
-            .farm-name {
-                font-size: 1.2rem;
+                height: 95px;
             }
 
             .card-stats {
-                width: 110px;
+                width: 100px;
             }
 
             .progress-circle {
-                width: 65px;
-                height: 65px;
+                width: 62px;
+                height: 62px;
             }
 
             .progress-circle::before {
-                width: 52px;
-                height: 52px;
+                width: 48px;
+                height: 48px;
             }
 
-            .progress-value {
-                font-size: 1rem;
+            .header h1 {
+                font-size: 1.7rem;
             }
         }
 
-        /* Top Navigation Header */
-        .main-navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-light) 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            z-index: 2000;
-        }
-
-        .nav-brand {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .nav-item {
-            color: var(--text-light);
+        .home-btn {
+            background: #A3B18A;
+            color: #1e3a22;
+            padding: 6px 16px;
+            border-radius: 8px;
             text-decoration: none;
-            padding: 10px 24px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 1.05rem;
-            transition: all 0.3s ease;
+            font-weight: 700;
         }
 
-        .nav-item.active {
-            background-color: var(--accent);
-            color: var(--primary-bg);
-            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+        .home-btn:hover {
+            background: #EDE0D4;
         }
 
-        .nav-item:hover:not(.active) {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            .main-navbar {
-                padding: 15px 20px;
-                flex-direction: column;
-                height: auto;
-                gap: 15px;
-            }
-
-            body {
-                padding-top: 160px;
-                /* Expand space to accommodate stacked mobile nav */
-            }
-
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 8px;
-            }
-
-            .nav-item {
-                padding: 8px 16px;
-                font-size: 0.95rem;
-            }
-        }
+        /* .nav-brand img {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+        } */
     </style>
 </head>
 
 <body>
 
-    <!-- Background Layers -->
-    <div class="bg-overlay"></div>
-    <div class="deco-circle deco-circle-1"></div>
-    <div class="deco-circle deco-circle-2"></div>
-
     <!-- Main Global Navigation Bar -->
     <header class="main-navbar">
-        <div class="nav-brand">سعف ويب</div>
-        <nav class="nav-links">
-            <a href="/home" class="nav-item active">الرئيسية</a>
-            <a href="/add_farm" class="nav-item">إضافة مزرعة</a>
-        </nav>
+        <div class="nav-brand">
+            <img src="/images/AseebLogo.png" alt="عسيب" style="height: 100px; width:auto; mix-blend-mode:screen;">
+        </div>
+        <div class="nav-links" id="navLinks">
+            <div class="nav-indicator" id="navIndicator"></div>
+            <a href="/" class="nav-item">
+                <i class="fa-solid fa-arrow-right"></i> الصفحة الرئيسية
+            </a>
+            <a href="/home" class="nav-item active" data-nav>مزارعي</a>
+            <a href="/add_farm" class="nav-item" data-nav>إضافة مزرعة</a>
+        </div>
     </header>
 
     <div class="container">
-        <!-- Top Section -->
+        <div class="page-header">
+            <h1>مزارع<span class="h1-accent">ي</span></h1>
+        </div>
+
         <div class="header">
-            <h1>مزارعي</h1>
-            <div class="badge">15 مزرعة</div>
+            <div class="badge" id="farmCount">0 مزرعة</div>
         </div>
 
         <!-- Search Bar -->
@@ -403,60 +548,168 @@
         </div>
     </div>
 
-    <!-- Compute Progress Ring Colors -->
+    <!-- DELETE MODAL -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-icon">🗑️</div>
+            <h2>حذف المزرعة</h2>
+            <p id="deleteModalMsg">هل أنت متأكد من حذف هذه المزرعة؟<br>لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="modal-btns">
+                <button class="modal-btn danger" onclick="confirmDelete()">نعم، احذف</button>
+                <button class="modal-btn cancel" onclick="closeDeleteModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             const farms = JSON.parse(localStorage.getItem("farms")) || [];
             const farmsList = document.getElementById("farmsList");
 
+            // تحديث العداد
+            document.getElementById("farmCount").textContent = farms.length + " مزرعة";
+
+            // ترتيب الأحدث أولاً
+            farms.reverse();
+
             farms.forEach((farm, index) => {
 
-                // نولد نسبة عشوائية مؤقتًا
-                const percent = Math.floor(Math.random() * 40) + 60;
+                const h = farm.healthScore || 0;
+                const s = farm.stressScore || 0;
+                const c = farm.criticalScore || 0;
 
-                let color = '#E74C3C';
-                if (percent >= 80) color = '#1ABC9C';
-                else if (percent >= 50) color = '#FDCB6E';
+                // conic-gradient بالنسب الحقيقية
+                const hEnd = h;
+                const sEnd = h + s;
+                const cEnd = h + s + c;
 
-                const farmCard = document.createElement("a");
-                farmCard.href = "#";
+                let gradient = '';
+                // لو ما تم التحليل بعد
+                if (h === 0 && s === 0 && c === 0) {
+                    gradient = `conic-gradient(rgba(255,255,255,0.15) 0% 100%)`;
+                } else if (h > 0 && s > 0 && c > 0) {
+                    gradient = `conic-gradient(#1ABC9C 0% ${hEnd}%, #FDCB6E ${hEnd}% ${sEnd}%, #E74C3C ${sEnd}% 100%)`;
+                } else if (h > 0 && s > 0) {
+                    gradient = `conic-gradient(#1ABC9C 0% ${hEnd}%, #FDCB6E ${hEnd}% 100%)`;
+                } else if (h > 0 && c > 0) {
+                    gradient = `conic-gradient(#1ABC9C 0% ${hEnd}%, #E74C3C ${hEnd}% 100%)`;
+                } else if (s > 0 && c > 0) {
+                    gradient = `conic-gradient(#FDCB6E 0% ${sEnd - hEnd}%, #E74C3C ${sEnd - hEnd}% 100%)`;
+                } else if (h === 100) {
+                    gradient = `conic-gradient(#1ABC9C 0% 100%)`;
+                } else if (s === 100) {
+                    gradient = `conic-gradient(#FDCB6E 0% 100%)`;
+                } else {
+                    gradient = `conic-gradient(#E74C3C 0% 100%)`;
+                }
+
+                const today = farm.dateAdded || new Date().toLocaleDateString('ar-SA');
+
+                const farmCard = document.createElement("div");
                 farmCard.className = "farm-card";
+                farmCard.style.cursor = "pointer";
 
-                farmCard.addEventListener("click", (e) => {
-                    e.preventDefault();
-
-                    // نخزن المزرعة المختارة
-                    localStorage.setItem("selectedFarm", JSON.stringify(farm));
-
-                    // نروح لصفحة الخريطة
-                    farmCard.addEventListener("click", (e) => {
-                        e.preventDefault();
-
-                        localStorage.setItem("selectedFarm", JSON.stringify(farm));
-
-                        window.location.href = "/map";
-                    });
-                });
                 farmCard.innerHTML = `
             <div class="card-info">
                 <div class="farm-name">${farm.farmName}</div>
-                <div class="farm-location">
-                    <i class="fa-solid fa-location-dot"></i>
-                    ${farm.region}
+                <div class="farm-meta">
+                    <span><i class="fa-solid fa-location-dot"></i> ${farm.region}</span>
+                    <span><i class="fa-solid fa-user"></i> ${farm.ownerName}</span>
+                    <span><i class="fa-solid fa-calendar"></i> تاريخ الإضافة: ${today}</span>
                 </div>
             </div>
-            <div class="card-stats">
-                <div class="progress-circle" style="--progress: ${percent}%; --color: ${color}">
-                    <span class="progress-value">${percent}%</span>
+            <div class="card-stats" onclick="event.stopPropagation(); localStorage.setItem('selectedFarm', JSON.stringify(${JSON.stringify(farm)})); window.location.href='map.html'">
+                <div class="progress-circle" style="background: ${gradient};">
                 </div>
+                <span class="stats-label">${(h === 0 && s === 0 && c === 0) ? 'لم يحلل بعد' : 'صحة المزرعة'}</span>
             </div>
+            <button class="btn-delete" data-index="${index}" title="حذف المزرعة">
+                <i class="fa-solid fa-trash"></i>
+            </button>
         `;
+
+                // الضغط على الكارد يروح للخريطة
+                farmCard.addEventListener("click", (e) => {
+                    if (e.target.closest('.btn-delete')) return;
+                    localStorage.setItem("selectedFarm", JSON.stringify(farm));
+                    window.location.href = "/map";
+                });
+
+                // زر الحذف
+                farmCard.querySelector('.btn-delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openDeleteModal(index, farm.farmName);
+                });
 
                 farmsList.appendChild(farmCard);
             });
 
+            // البحث بالاسم فقط
+            document.querySelector('.search-input').addEventListener('input', function () {
+                const query = this.value.trim().toLowerCase();
+                const cards = document.querySelectorAll('.farm-card');
+                cards.forEach(card => {
+                    const name = card.querySelector('.farm-name').textContent.toLowerCase();
+                    card.style.display = name.includes(query) ? 'flex' : 'none';
+                });
+            });
+            const navLinks = document.querySelectorAll('[data-nav]');
+            const indicator = document.getElementById('navIndicator');
+            const navWrap = document.getElementById('navLinks');
+
+            function moveIndicator(el) {
+                const wrapRect = navWrap.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+                indicator.style.width = elRect.width + 'px';
+                indicator.style.right = (wrapRect.right - elRect.right) + 'px';
+                indicator.style.left = 'auto';
+            }
+
+            const activeLink = document.querySelector('.nav-item.active');
+            if (activeLink) setTimeout(() => moveIndicator(activeLink), 50);
+
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', () => moveIndicator(link));
+                link.addEventListener('click', function () {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    moveIndicator(this);
+                });
+            });
+
+            navWrap.addEventListener('mouseleave', () => {
+                const active = document.querySelector('.nav-item.active');
+                if (active) moveIndicator(active);
+            });
+
         });
+
+        let deleteIndex = -1;
+
+        function openDeleteModal(index, name) {
+            deleteIndex = index;
+            document.getElementById('deleteModalMsg').innerHTML = `هل أنت متأكد من حذف "<strong>${name}</strong>"؟<br>لا يمكن التراجع عن هذا الإجراء.`;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteIndex = -1;
+        }
+
+        function confirmDelete() {
+            if (deleteIndex === -1) return;
+            let farms = JSON.parse(localStorage.getItem("farms")) || [];
+            farms.splice(deleteIndex, 1);
+            localStorage.setItem("farms", JSON.stringify(farms));
+            closeDeleteModal();
+            location.reload();
+        }
+
+        if (sessionStorage.getItem("reloadHome")) {
+            sessionStorage.removeItem("reloadHome");
+            location.reload();
+        }
     </script>
 </body>
 
