@@ -21,7 +21,7 @@ def read_index():
 def read_map():
     return FileResponse(os.path.join(BASE_DIR, "map.html"))
 
-@app.get("/add-farm")
+@app.get("/add_farm")
 def read_add_farm():
     return FileResponse(os.path.join(BASE_DIR, "add_farm.html"))
 
