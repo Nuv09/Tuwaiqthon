@@ -106,18 +106,15 @@ def get_ndvi_points(polygon_coords, view):
     else:
         ndvi = get_current_ndvi(region)
 
-    # scale يتكيف حسب حجم المزرعة — يغطي كامل المزرعة بشبكة منتظمة
-    area = region.area().getInfo()
-    scale = 10 if area < 50000 else 20
-
     samples = (
         ndvi
-        .clipToCollection(ee.FeatureCollection([ee.Feature(region)]))
+        .clip(region)
         .sample(
             region=region,
-            scale=scale,
+            scale=15,
             geometries=True,
-            seed=42
+            projection='EPSG:4326',
+            tileScale=2
         )
         .getInfo()
     )
