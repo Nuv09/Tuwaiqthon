@@ -107,11 +107,14 @@ def get_ndvi_points(polygon_coords, view):
         ndvi = get_current_ndvi(region)
 
     samples = (
-        ndvi.sample(
+        ndvi
+        .clip(region)
+        .sample(
             region=region,
-            scale=10,
-            numPixels=450,
-            geometries=True
+            scale=15,
+            geometries=True,
+            projection='EPSG:4326',
+            tileScale=2
         )
         .getInfo()
     )
@@ -121,7 +124,10 @@ def get_ndvi_points(polygon_coords, view):
     for f in samples["features"]:
 
         coords = f["geometry"]["coordinates"]
-        value = f["properties"]["NDVI"]
+        value  = f["properties"].get("NDVI")
+
+        if value is None:
+            continue
 
         if value > 0.55:
             status = "healthy"
@@ -131,14 +137,13 @@ def get_ndvi_points(polygon_coords, view):
             status = "critical"
 
         points.append({
-            "lat": coords[1],
-            "lng": coords[0],
-            "ndvi": value,
+            "lat":    coords[1],
+            "lng":    coords[0],
+            "ndvi":   round(value, 4),
             "status": status
         })
 
     return points
-
 
 @app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
