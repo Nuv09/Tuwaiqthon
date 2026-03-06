@@ -21,6 +21,10 @@ def read_index():
 def read_map():
     return FileResponse(os.path.join(BASE_DIR, "map.html"))
 
+@app.get("/add-farm")
+def read_add_farm():
+    return FileResponse(os.path.join(BASE_DIR, "add_farm.html"))
+
 try:
     ee.Initialize()
 except Exception:
