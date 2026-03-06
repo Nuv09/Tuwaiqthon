@@ -15,11 +15,11 @@ app.mount("/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), na
 
 @app.get("/")
 def read_index():
-    return FileResponse("../index.html")
+    return FileResponse(os.path.join(BASE_DIR, "index.html"))
 
 @app.get("/map")
 def read_map():
-    return FileResponse("../map.html")
+    return FileResponse(os.path.join(BASE_DIR, "map.html"))
 
 try:
     ee.Initialize()
