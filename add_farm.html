@@ -128,7 +128,7 @@
             text-align: center;
             margin-bottom: 50px;
             padding: 20px 0;
-           height: 120px;
+            height: 120px;
         }
 
         .page-header-tag {
@@ -600,12 +600,32 @@
             background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/images/spritesheet-2x.png') !important;
         }
 
+        .main-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            background: rgba(20, 32, 22, 0.82);
+            backdrop-filter: blur(22px);
+            border-bottom: 1px solid var(--border);
+        }
+
         /* ══════════════════════════════
            RESPONSIVE
         ══════════════════════════════ */
         @media (max-width: 680px) {
             .form-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .main-navbar {
+                padding: 0 20px;
             }
 
             .form-group.full {
@@ -630,17 +650,20 @@
 
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
+
+    <header class="main-navbar">
         <div class="nav-brand">
-            <img src="/images/AseebLogo.png" alt="عسيب" style="height:100px; width:auto; mix-blend-mode:screen;">
+            <img src="/images/AseebLogo.png" alt="عسيب" style="height: 100px; width:auto; mix-blend-mode:screen;">
         </div>
         <div class="nav-links" id="navLinks">
             <div class="nav-indicator" id="navIndicator"></div>
+            <a href="/" class="nav-item">
+                <i class="fa-solid fa-arrow-right"></i> الصفحة الرئيسية
+            </a>
             <a href="/home" class="nav-item" data-nav>مزارعي</a>
             <a href="/add_farm" class="nav-item active" data-nav>إضافة مزرعة</a>
         </div>
-    </nav>
+    </header>
 
     <div class="page">
 
